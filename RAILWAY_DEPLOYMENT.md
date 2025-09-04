@@ -13,10 +13,12 @@ This guide will help you deploy your SaaS ERP application to Railway.
    - `railway.json`
    - `Procfile`
    - `nixpacks.toml`
-   - `requirements.txt`
+   - `requirements-railway.txt` (Railway-optimized requirements)
    - `railway.env.example`
 
-2. Commit and push your changes to your Git repository.
+2. **Important**: Use `requirements-railway.txt` for Railway deployment as it contains compatible package versions.
+
+3. Commit and push your changes to your Git repository.
 
 ## Step 2: Create a New Railway Project
 
@@ -96,10 +98,30 @@ RATELIMIT_STORAGE_URL=redis://username:password@host:port
 
 ### Common Issues:
 
-1. **Build Fails**: Check the build logs in Railway dashboard
-2. **Database Connection Error**: Verify DATABASE_URL is correct
-3. **Redis Connection Error**: Verify REDIS_URL is correct
-4. **Application Crashes**: Check the deployment logs
+1. **Build Fails - Package Version Conflicts**:
+   - Use `requirements-railway.txt` instead of `requirements.txt`
+   - Check build logs for specific package version errors
+   - Update `nixpacks.toml` to use the correct requirements file
+
+2. **Build Fails - General**:
+   - Check the build logs in Railway dashboard
+   - Ensure all required files are present
+   - Verify Python version compatibility
+
+3. **Database Connection Error**: 
+   - Verify DATABASE_URL is correct
+   - Check if PostgreSQL service is running
+   - Ensure database credentials are properly set
+
+4. **Redis Connection Error**: 
+   - Verify REDIS_URL is correct
+   - Check if Redis service is running
+   - Redis is optional but recommended for caching
+
+5. **Application Crashes**: 
+   - Check the deployment logs
+   - Verify all environment variables are set
+   - Check if the application starts locally
 
 ### Logs:
 - View build logs: Railway Dashboard → Your Service → Deployments

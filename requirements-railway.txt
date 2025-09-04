@@ -1,0 +1,32 @@
+# Railway-optimized requirements.txt
+# These versions are tested and compatible with Railway's build environment
+
+Flask==3.0.0
+Flask-SQLAlchemy==3.1.1
+Flask-Migrate==4.0.5
+Flask-Login==0.6.3
+Flask-WTF==1.2.1
+Flask-Mail==0.9.1
+Flask-CORS==4.0.0
+Flask-Limiter==3.5.0
+Flask-Compress==1.14
+WTForms==3.1.1
+email-validator==2.1.0
+psycopg2-binary==2.9.9
+redis==5.0.1
+celery==5.3.4
+stripe==7.8.0
+razorpay==1.4.1
+twilio==8.10.0
+gunicorn==21.2.0
+python-dotenv==1.0.0
+Pillow==10.1.0
+reportlab==4.0.7
+python-dateutil==2.8.2
+cryptography==42.0.5
+bcrypt==4.1.2
+PyJWT==2.8.0
+marshmallow==3.20.1
+marshmallow-sqlalchemy==0.29.0
+alembic==1.13.1
+psutil==5.9.6
