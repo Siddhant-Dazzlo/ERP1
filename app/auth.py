@@ -37,7 +37,7 @@ def login():
                 flash('Your account has been deactivated. Please contact administrator.', 'error')
                 return redirect(url_for('auth.login'))
             
-            # Check if user belongs to current tenant
+            # Check if user belongs to current tenant (only for multi-tenant deployments)
             if g.tenant and user.company.subdomain != g.tenant:
                 flash('Access denied. You do not have access to this company.', 'error')
                 return redirect(url_for('auth.login'))
