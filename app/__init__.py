@@ -47,7 +47,17 @@ def create_app(config_name='development'):
     def load_user(user_id):
         # Import here to avoid circular imports
         from app.models import User
-        return User.query.get(int(user_id))
+        try:
+            # Try to convert to integer first
+            user_id_int = int(user_id)
+            return User.query.get(user_id_int)
+        except (ValueError, TypeError):
+            # If conversion fails, try to find by username or email
+            # This handles cases where user_id might be a string like 'admin-001'
+            user = User.query.filter_by(username=user_id).first()
+            if not user:
+                user = User.query.filter_by(email=user_id).first()
+            return user
     
     # Multi-tenancy middleware
     @app.before_request

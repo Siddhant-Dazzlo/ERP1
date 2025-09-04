@@ -12,7 +12,17 @@ auth_bp = Blueprint('auth', __name__)
 
 @login_manager.user_loader
 def load_user(user_id):
-    return User.query.get(int(user_id))
+    try:
+        # Try to convert to integer first
+        user_id_int = int(user_id)
+        return User.query.get(user_id_int)
+    except (ValueError, TypeError):
+        # If conversion fails, try to find by username or email
+        # This handles cases where user_id might be a string like 'admin-001'
+        user = User.query.filter_by(username=user_id).first()
+        if not user:
+            user = User.query.filter_by(email=user_id).first()
+        return user
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
