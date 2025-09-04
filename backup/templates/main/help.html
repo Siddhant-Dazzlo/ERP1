@@ -1,0 +1,485 @@
+{% extends "base.html" %}
+
+{% block title %}Help & Documentation{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="page-title-box">
+                <div class="page-title-right">
+                    <ol class="breadcrumb m-0">
+                        <li class="breadcrumb-item"><a href="{{ url_for('main.dashboard') }}">Dashboard</a></li>
+                        <li class="breadcrumb-item active">Help & Documentation</li>
+                    </ol>
+                </div>
+                <h4 class="page-title">Help & Documentation</h4>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search Help -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body text-center">
+                    <div class="mb-4">
+                        <i class="bi bi-question-circle fs-1 text-primary"></i>
+                        <h3 class="mt-3">How can we help you?</h3>
+                        <p class="text-muted">Search our knowledge base or browse categories below</p>
+                    </div>
+                    
+                    <div class="row justify-content-center">
+                        <div class="col-lg-6">
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text">
+                                    <i class="bi bi-search"></i>
+                                </span>
+                                <input type="text" class="form-control" id="helpSearch" placeholder="Search for help articles, tutorials, and guides...">
+                                <button class="btn btn-primary" type="button" onclick="searchHelp()">
+                                    Search
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Help Categories -->
+    <div class="row">
+        <div class="col-xl-3 col-md-6">
+            <div class="card help-category">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <i class="bi bi-speedometer2 fs-1 text-primary"></i>
+                    </div>
+                    <h5>Getting Started</h5>
+                    <p class="text-muted">New to the platform? Learn the basics</p>
+                    <a href="#getting-started" class="btn btn-outline-primary btn-sm">Learn More</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card help-category">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <i class="bi bi-people fs-1 text-success"></i>
+                    </div>
+                    <h5>User Management</h5>
+                    <p class="text-muted">Manage users, roles, and permissions</p>
+                    <a href="#user-management" class="btn btn-outline-success btn-sm">Learn More</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card help-category">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <i class="bi bi-graph-up fs-1 text-warning"></i>
+                    </div>
+                    <h5>Sales & CRM</h5>
+                    <p class="text-muted">Manage leads, customers, and sales</p>
+                    <a href="#sales-crm" class="btn btn-outline-warning btn-sm">Learn More</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card help-category">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <i class="bi bi-credit-card fs-1 text-info"></i>
+                    </div>
+                    <h5>Billing & Subscriptions</h5>
+                    <p class="text-muted">Manage billing and subscription plans</p>
+                    <a href="#billing" class="btn btn-outline-info btn-sm">Learn More</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Help Content -->
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Getting Started -->
+            <div class="card mb-4" id="getting-started">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-speedometer2 me-2 text-primary"></i>
+                        Getting Started
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="accordion" id="gettingStartedAccordion">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne">
+                                    Welcome to SaaS ERP
+                                </button>
+                            </h2>
+                            <div id="collapseOne" class="accordion-collapse collapse show" data-bs-parent="#gettingStartedAccordion">
+                                <div class="accordion-body">
+                                    <p>Welcome to your new SaaS ERP system! This comprehensive platform helps you manage your business operations efficiently.</p>
+                                    <h6>Key Features:</h6>
+                                    <ul>
+                                        <li><strong>Dashboard:</strong> Get an overview of your business metrics</li>
+                                        <li><strong>User Management:</strong> Manage team members and permissions</li>
+                                        <li><strong>Sales CRM:</strong> Track leads, customers, and sales</li>
+                                        <li><strong>Billing:</strong> Manage subscriptions and payments</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo">
+                                    First Steps
+                                </button>
+                            </h2>
+                            <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#gettingStartedAccordion">
+                                <div class="accordion-body">
+                                    <ol>
+                                        <li><strong>Complete Your Profile:</strong> Update your company information and settings</li>
+                                        <li><strong>Invite Team Members:</strong> Add users to your organization</li>
+                                        <li><strong>Configure Sales Pipeline:</strong> Set up your sales process</li>
+                                        <li><strong>Set Up Billing:</strong> Choose a subscription plan</li>
+                                    </ol>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- User Management -->
+            <div class="card mb-4" id="user-management">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-people me-2 text-success"></i>
+                        User Management
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="accordion" id="userManagementAccordion">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree">
+                                    Adding New Users
+                                </button>
+                            </h2>
+                            <div id="collapseThree" class="accordion-collapse collapse show" data-bs-parent="#userManagementAccordion">
+                                <div class="accordion-body">
+                                    <p>To add new users to your organization:</p>
+                                    <ol>
+                                        <li>Go to <strong>Admin → Users</strong></li>
+                                        <li>Click <strong>Add User</strong></li>
+                                        <li>Fill in the user's information</li>
+                                        <li>Assign appropriate role and permissions</li>
+                                        <li>Send invitation email</li>
+                                    </ol>
+                                    <div class="alert alert-info">
+                                        <i class="bi bi-info-circle me-2"></i>
+                                        Users will receive an email invitation to join your organization.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour">
+                                    User Roles & Permissions
+                                </button>
+                            </h2>
+                            <div id="collapseFour" class="accordion-collapse collapse" data-bs-parent="#userManagementAccordion">
+                                <div class="accordion-body">
+                                    <h6>Available Roles:</h6>
+                                    <ul>
+                                        <li><strong>Admin:</strong> Full access to all features and settings</li>
+                                        <li><strong>Manager:</strong> Can manage sales, customers, and team members</li>
+                                        <li><strong>Sales Executive:</strong> Can manage leads and customers</li>
+                                        <li><strong>Viewer:</strong> Read-only access to assigned areas</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sales & CRM -->
+            <div class="card mb-4" id="sales-crm">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-graph-up me-2 text-warning"></i>
+                        Sales & CRM
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="accordion" id="salesCRMAccordion">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFive">
+                                    Managing Leads
+                                </button>
+                            </h2>
+                            <div id="collapseFive" class="accordion-collapse collapse show" data-bs-parent="#salesCRMAccordion">
+                                <div class="accordion-body">
+                                    <p>Effective lead management is crucial for sales success:</p>
+                                    <h6>Lead Lifecycle:</h6>
+                                    <ol>
+                                        <li><strong>New Lead:</strong> Initial contact or inquiry</li>
+                                        <li><strong>Qualified:</strong> Lead meets your criteria</li>
+                                        <li><strong>Proposal:</strong> Quote or proposal sent</li>
+                                        <li><strong>Negotiation:</strong> Discussing terms and conditions</li>
+                                        <li><strong>Closed Won:</strong> Deal completed successfully</li>
+                                        <li><strong>Closed Lost:</strong> Deal not won</li>
+                                    </ol>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSix">
+                                    Sales Pipeline
+                                </button>
+                            </h2>
+                            <div id="collapseSix" class="accordion-collapse collapse" data-bs-parent="#salesCRMAccordion">
+                                <div class="accordion-body">
+                                    <p>The sales pipeline helps you visualize and manage your sales process:</p>
+                                    <ul>
+                                        <li>Track deals at each stage</li>
+                                        <li>Identify bottlenecks in your sales process</li>
+                                        <li>Forecast revenue based on pipeline data</li>
+                                        <li>Monitor team performance</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Billing -->
+            <div class="card mb-4" id="billing">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-credit-card me-2 text-info"></i>
+                        Billing & Subscriptions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="accordion" id="billingAccordion">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSeven">
+                                    Subscription Plans
+                                </button>
+                            </h2>
+                            <div id="collapseSeven" class="accordion-collapse collapse show" data-bs-parent="#billingAccordion">
+                                <div class="accordion-body">
+                                    <p>Choose the plan that best fits your business needs:</p>
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="card border-primary">
+                                                <div class="card-body text-center">
+                                                    <h6 class="card-title">Starter</h6>
+                                                    <p class="card-text">Perfect for small teams</p>
+                                                    <ul class="list-unstyled">
+                                                        <li>Up to 5 users</li>
+                                                        <li>Basic features</li>
+                                                        <li>Email support</li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="card border-success">
+                                                <div class="card-body text-center">
+                                                    <h6 class="card-title">Professional</h6>
+                                                    <p class="card-text">Ideal for growing businesses</p>
+                                                    <ul class="list-unstyled">
+                                                        <li>Up to 25 users</li>
+                                                        <li>Advanced features</li>
+                                                        <li>Priority support</li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="card border-warning">
+                                                <div class="card-body text-center">
+                                                    <h6 class="card-title">Enterprise</h6>
+                                                    <p class="card-text">For large organizations</p>
+                                                    <ul class="list-unstyled">
+                                                        <li>Unlimited users</li>
+                                                        <li>All features</li>
+                                                        <li>24/7 support</li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseEight">
+                                    Payment Methods
+                                </button>
+                            </h2>
+                            <div id="collapseEight" class="accordion-collapse collapse" data-bs-parent="#billingAccordion">
+                                <div class="accordion-body">
+                                    <p>We support multiple payment methods:</p>
+                                    <ul>
+                                        <li><strong>Credit/Debit Cards:</strong> Visa, MasterCard, American Express</li>
+                                        <li><strong>Digital Wallets:</strong> PayPal, Apple Pay, Google Pay</li>
+                                        <li><strong>Bank Transfers:</strong> ACH, SEPA, Wire transfers</li>
+                                        <li><strong>Local Payment Methods:</strong> Based on your region</li>
+                                    </ul>
+                                    <div class="alert alert-success">
+                                        <i class="bi bi-shield-check me-2"></i>
+                                        All payments are processed securely with industry-standard encryption.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Contact Support -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Need More Help?</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">Can't find what you're looking for? Our support team is here to help.</p>
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('main.contact') }}" class="btn btn-primary">
+                            <i class="bi bi-headset me-1"></i>Contact Support
+                        </a>
+                        <a href="#" class="btn btn-outline-secondary" onclick="openLiveChat()">
+                            <i class="bi bi-chat-dots me-1"></i>Live Chat
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Links -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Quick Links</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        <a href="#" class="list-group-item list-group-item-action d-flex align-items-center">
+                            <i class="bi bi-play-circle me-2 text-primary"></i>
+                            Video Tutorials
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action d-flex align-items-center">
+                            <i class="bi bi-file-earmark-text me-2 text-success"></i>
+                            API Documentation
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action d-flex align-items-center">
+                            <i class="bi bi-download me-2 text-warning"></i>
+                            Download Guides
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action d-flex align-items-center">
+                            <i class="bi bi-question-circle me-2 text-info"></i>
+                            FAQ
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Articles -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Recent Articles</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        {% for article in recent_articles %}
+                        <a href="#" class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">{{ article.title }}</h6>
+                                <small class="text-muted">{{ article.date.strftime('%m/%d') }}</small>
+                            </div>
+                            <p class="mb-1">{{ article.excerpt }}</p>
+                            <small class="text-muted">{{ article.category }}</small>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function searchHelp() {
+    const searchTerm = document.getElementById('helpSearch').value;
+    if (searchTerm.trim()) {
+        // Implement search functionality
+        alert('Searching for: ' + searchTerm);
+        // You can redirect to search results page or filter content
+    }
+}
+
+function openLiveChat() {
+    // Implement live chat functionality
+    alert('Opening live chat...');
+}
+
+// Smooth scrolling for anchor links
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+            target.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+        }
+    });
+});
+
+// Search functionality
+document.getElementById('helpSearch').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        searchHelp();
+    }
+});
+</script>
+
+<style>
+.help-category {
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.help-category:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.accordion-button:not(.collapsed) {
+    background-color: rgba(102, 126, 234, 0.1);
+    color: #667eea;
+}
+
+.accordion-button:focus {
+    box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.25);
+}
+</style>
+{% endblock %}

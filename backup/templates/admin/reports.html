@@ -1,0 +1,409 @@
+{% extends "base.html" %}
+
+{% block title %}Reports & Analytics{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="page-title-box">
+                <div class="page-title-right">
+                    <ol class="breadcrumb m-0">
+                        <li class="breadcrumb-item"><a href="{{ url_for('main.dashboard') }}">Dashboard</a></li>
+                        <li class="breadcrumb-item active">Reports & Analytics</li>
+                    </ol>
+                </div>
+                <h4 class="page-title">Reports & Analytics</h4>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="row">
+        <div class="col-xl-3 col-md-6">
+            <div class="stats-card">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <div class="stats-number">{{ total_users }}</div>
+                        <div class="stats-label">Total Users</div>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-people fs-1"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="stats-card">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <div class="stats-number">{{ total_customers }}</div>
+                        <div class="stats-label">Total Customers</div>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-person-badge fs-1"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="stats-card">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <div class="stats-number">{{ total_revenue }}</div>
+                        <div class="stats-label">Total Revenue</div>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-currency-dollar fs-1"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="stats-card">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <div class="stats-number">{{ conversion_rate }}%</div>
+                        <div class="stats-label">Conversion Rate</div>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-graph-up fs-1"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Sales Performance Chart -->
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Sales Performance</h5>
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="updateChart('7d')">7 Days</button>
+                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="updateChart('30d')">30 Days</button>
+                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="updateChart('90d')">90 Days</button>
+                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="updateChart('1y')">1 Year</button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <canvas id="salesChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Performers -->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Top Sales Performers</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>User</th>
+                                    <th>Sales</th>
+                                    <th>Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for performer in top_performers %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-sm me-2">
+                                                {% if performer.avatar_url %}
+                                                    <img src="{{ performer.avatar_url }}" class="rounded-circle" alt="Avatar" style="width: 32px; height: 32px;">
+                                                {% else %}
+                                                    <div class="avatar-title rounded-circle bg-primary" style="width: 32px; height: 32px; line-height: 32px;">
+                                                        {{ performer.first_name[0] }}{{ performer.last_name[0] }}
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-0 fs-6">{{ performer.get_full_name() }}</h6>
+                                                <small class="text-muted">{{ performer.role.value.replace('_', ' ').title() }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>{{ performer.sales_count }}</td>
+                                    <td>${{ "{:,.2f}".format(performer.sales_amount) }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- User Activity -->
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">User Activity Overview</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="userActivityChart" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Revenue by Product -->
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Revenue by Product Category</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="productRevenueChart" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detailed Reports -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Generate Custom Reports</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('admin.generate_report') }}">
+                        {{ report_form.hidden_tag() }}
+                        
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    {{ report_form.report_type.label(class="form-label") }}
+                                    {{ report_form.report_type(class="form-select") }}
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    {{ report_form.date_from.label(class="form-label") }}
+                                    {{ report_form.date_from(class="form-control", type="date") }}
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    {{ report_form.date_to.label(class="form-label") }}
+                                    {{ report_form.date_to(class="form-control", type="date") }}
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    {{ report_form.format.label(class="form-label") }}
+                                    {{ report_form.format(class="form-select") }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Include Charts</label>
+                                    <div class="form-check">
+                                        {{ report_form.include_charts(class="form-check-input") }}
+                                        <label class="form-check-label" for="{{ report_form.include_charts.id }}">
+                                            Include visual charts and graphs
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Email Report</label>
+                                    <div class="form-check">
+                                        {{ report_form.email_report(class="form-check-input") }}
+                                        <label class="form-check-label" for="{{ report_form.email_report.id }}">
+                                            Send report via email
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-file-earmark-text me-1"></i>Generate Report
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Reports -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Recent Reports</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Report Name</th>
+                                    <th>Type</th>
+                                    <th>Generated By</th>
+                                    <th>Date</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for report in recent_reports %}
+                                <tr>
+                                    <td>{{ report.name }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ 'primary' if report.type == 'sales' else 'success' if report.type == 'financial' else 'info' }}">
+                                            {{ report.type.title() }}
+                                        </span>
+                                    </td>
+                                    <td>{{ report.generated_by.get_full_name() }}</td>
+                                    <td>{{ report.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if report.status == 'completed' else 'warning' if report.status == 'processing' else 'danger' }}">
+                                            {{ report.status.title() }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if report.status == 'completed' %}
+                                            <a href="{{ url_for('admin.download_report', report_id=report.id) }}" class="btn btn-sm btn-outline-primary">
+                                                <i class="bi bi-download me-1"></i>Download
+                                            </a>
+                                        {% else %}
+                                            <button class="btn btn-sm btn-outline-secondary" disabled>
+                                                <i class="bi bi-clock me-1"></i>Processing
+                                            </button>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+// Sales Performance Chart
+const salesCtx = document.getElementById('salesChart').getContext('2d');
+const salesChart = new Chart(salesCtx, {
+    type: 'line',
+    data: {
+        labels: {{ sales_chart_labels | tojson }},
+        datasets: [{
+            label: 'Sales Revenue',
+            data: {{ sales_chart_data | tojson }},
+            borderColor: '#667eea',
+            backgroundColor: 'rgba(102, 126, 234, 0.1)',
+            tension: 0.4,
+            fill: true
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: false
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    callback: function(value) {
+                        return '$' + value.toLocaleString();
+                    }
+                }
+            }
+        }
+    }
+});
+
+// User Activity Chart
+const userActivityCtx = document.getElementById('userActivityChart').getContext('2d');
+const userActivityChart = new Chart(userActivityCtx, {
+    type: 'doughnut',
+    data: {
+        labels: ['Active Users', 'Inactive Users', 'New Users'],
+        datasets: [{
+            data: [{{ active_users }}, {{ inactive_users }}, {{ new_users }}],
+            backgroundColor: ['#28a745', '#dc3545', '#17a2b8'],
+            borderWidth: 0
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    }
+});
+
+// Product Revenue Chart
+const productRevenueCtx = document.getElementById('productRevenueChart').getContext('2d');
+const productRevenueChart = new Chart(productRevenueCtx, {
+    type: 'bar',
+    data: {
+        labels: {{ product_categories | tojson }},
+        datasets: [{
+            label: 'Revenue',
+            data: {{ product_revenue | tojson }},
+            backgroundColor: 'rgba(102, 126, 234, 0.8)',
+            borderColor: '#667eea',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: false
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    callback: function(value) {
+                        return '$' + value.toLocaleString();
+                    }
+                }
+            }
+        }
+    }
+});
+
+function updateChart(period) {
+    // Update chart data based on selected period
+    fetch(`/admin/reports/chart-data?period=${period}`)
+        .then(response => response.json())
+        .then(data => {
+            salesChart.data.labels = data.labels;
+            salesChart.data.datasets[0].data = data.data;
+            salesChart.update();
+        });
+}
+</script>
+{% endblock %}

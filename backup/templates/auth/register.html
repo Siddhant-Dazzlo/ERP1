@@ -1,0 +1,598 @@
+{% extends "base.html" %}
+
+{% block title %}Register - SaaS ERP{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-xl-6">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-primary text-white text-center py-4">
+                    <h2 class="mb-0">
+                        <i class="bi bi-building me-3"></i>Create Your Company Account
+                    </h2>
+                    <p class="mb-0 mt-2 opacity-75">Start your journey with our powerful SaaS ERP solution</p>
+                </div>
+                
+                <div class="card-body p-5">
+                    <form id="registrationForm" method="POST" action="/register" class="needs-validation" novalidate>
+                        <!-- Company Information -->
+                        <div class="mb-4">
+                            <h5 class="text-primary mb-3">
+                                <i class="bi bi-building me-2"></i>Company Information
+                            </h5>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="company_name" class="form-label">Company Name *</label>
+                                    <input type="text" class="form-control" id="company_name" name="company_name" 
+                                           required placeholder="Enter your company name">
+                                    <div class="invalid-feedback">
+                                        Please provide a company name.
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="company_website" class="form-label">Website</label>
+                                    <input type="url" class="form-control" id="company_website" name="company_website" 
+                                           placeholder="https://yourcompany.com">
+                                    <div class="invalid-feedback">
+                                        Please provide a valid website URL.
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="company_phone" class="form-label">Phone Number</label>
+                                    <input type="tel" class="form-control" id="company_phone" name="company_phone" 
+                                           placeholder="+1 (555) 123-4567">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="company_size" class="form-label">Company Size</label>
+                                    <select class="form-select" id="company_size" name="company_size">
+                                        <option value="">Select company size</option>
+                                        <option value="1-10">1-10 employees</option>
+                                        <option value="11-50">11-50 employees</option>
+                                        <option value="51-200">51-200 employees</option>
+                                        <option value="201-500">201-500 employees</option>
+                                        <option value="500+">500+ employees</option>
+                                    </select>
+                                </div>
+                                <div class="col-12">
+                                    <label for="company_address" class="form-label">Address</label>
+                                    <textarea class="form-control" id="company_address" name="company_address" 
+                                              rows="2" placeholder="Enter your company address"></textarea>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="company_city" class="form-label">City</label>
+                                    <input type="text" class="form-control" id="company_city" name="company_city" 
+                                           placeholder="Enter city">
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="company_state" class="form-label">State/Province</label>
+                                    <input type="text" class="form-control" id="company_state" name="company_state" 
+                                           placeholder="State">
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="company_zip" class="form-label">ZIP/Postal Code</label>
+                                    <input type="text" class="form-control" id="company_zip" name="company_zip" 
+                                           placeholder="ZIP">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="company_country" class="form-label">Country</label>
+                                    <select class="form-select" id="company_country" name="company_country">
+                                        <option value="">Select country</option>
+                                        <option value="US">United States</option>
+                                        <option value="CA">Canada</option>
+                                        <option value="GB">United Kingdom</option>
+                                        <option value="DE">Germany</option>
+                                        <option value="FR">France</option>
+                                        <option value="IN">India</option>
+                                        <option value="AU">Australia</option>
+                                        <option value="JP">Japan</option>
+                                        <option value="CN">China</option>
+                                        <option value="BR">Brazil</option>
+                                        <option value="MX">Mexico</option>
+                                        <option value="SG">Singapore</option>
+                                        <option value="AE">United Arab Emirates</option>
+                                        <option value="SA">Saudi Arabia</option>
+                                        <option value="ZA">South Africa</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="company_industry" class="form-label">Industry</label>
+                                    <select class="form-select" id="company_industry" name="company_industry">
+                                        <option value="">Select industry</option>
+                                        <option value="technology">Technology</option>
+                                        <option value="healthcare">Healthcare</option>
+                                        <option value="finance">Finance</option>
+                                        <option value="retail">Retail</option>
+                                        <option value="manufacturing">Manufacturing</option>
+                                        <option value="education">Education</option>
+                                        <option value="real_estate">Real Estate</option>
+                                        <option value="consulting">Consulting</option>
+                                        <option value="marketing">Marketing</option>
+                                        <option value="logistics">Logistics</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Admin User Information -->
+                        <div class="mb-4">
+                            <h5 class="text-primary mb-3">
+                                <i class="bi bi-person me-2"></i>Admin User Information
+                            </h5>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="first_name" class="form-label">First Name *</label>
+                                    <input type="text" class="form-control" id="first_name" name="first_name" 
+                                           required placeholder="Enter your first name">
+                                    <div class="invalid-feedback">
+                                        Please provide your first name.
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="last_name" class="form-label">Last Name *</label>
+                                    <input type="text" class="form-control" id="last_name" name="last_name" 
+                                           required placeholder="Enter your last name">
+                                    <div class="invalid-feedback">
+                                        Please provide your last name.
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="email" class="form-label">Email Address *</label>
+                                    <input type="email" class="form-control" id="email" name="email" 
+                                           required placeholder="Enter your email address">
+                                    <div class="invalid-feedback">
+                                        Please provide a valid email address.
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="phone" class="form-label">Phone Number</label>
+                                    <input type="tel" class="form-control" id="phone" name="phone" 
+                                           placeholder="+1 (555) 123-4567">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="password" class="form-label">Password *</label>
+                                    <div class="input-group">
+                                        <input type="password" class="form-control" id="password" name="password" 
+                                               required placeholder="Create a strong password">
+                                        <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('password')">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+                                    </div>
+                                    <div class="invalid-feedback">
+                                        Please create a password.
+                                    </div>
+                                    <div class="form-text">
+                                        <small class="password-strength" id="passwordStrength"></small>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="confirm_password" class="form-label">Confirm Password *</label>
+                                    <div class="input-group">
+                                        <input type="password" class="form-control" id="confirm_password" name="confirm_password" 
+                                               required placeholder="Confirm your password">
+                                        <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('confirm_password')">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+                                    </div>
+                                    <div class="invalid-feedback">
+                                        Please confirm your password.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Subscription Plan -->
+                        <div class="mb-4">
+                            <h5 class="text-primary mb-3">
+                                <i class="bi bi-credit-card me-2"></i>Choose Your Plan
+                            </h5>
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <div class="card h-100 plan-card" data-plan="starter">
+                                        <div class="card-body text-center">
+                                            <h6 class="card-title">Starter</h6>
+                                            <div class="plan-price mb-2">
+                                                <span class="h4 text-primary">$29</span>
+                                                <small class="text-muted">/month</small>
+                                            </div>
+                                            <ul class="list-unstyled small text-muted">
+                                                <li>Up to 5 users</li>
+                                                <li>10 GB storage</li>
+                                                <li>Basic features</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card h-100 plan-card border-primary" data-plan="pro">
+                                        <div class="card-body text-center">
+                                            <span class="badge bg-primary position-absolute top-0 start-50 translate-middle-x">Most Popular</span>
+                                            <h6 class="card-title">Pro</h6>
+                                            <div class="plan-price mb-2">
+                                                <span class="h4 text-primary">$79</span>
+                                                <small class="text-muted">/month</small>
+                                            </div>
+                                            <ul class="list-unstyled small text-muted">
+                                                <li>Up to 25 users</li>
+                                                <li>100 GB storage</li>
+                                                <li>Advanced features</li>
+                                                <li>Priority support</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card h-100 plan-card" data-plan="enterprise">
+                                        <div class="card-body text-center">
+                                            <h6 class="card-title">Enterprise</h6>
+                                            <div class="plan-price mb-2">
+                                                <span class="h4 text-primary">$199</span>
+                                                <small class="text-muted">/month</small>
+                                            </div>
+                                            <ul class="list-unstyled small text-muted">
+                                                <li>Unlimited users</li>
+                                                <li>1 TB storage</li>
+                                                <li>All features</li>
+                                                <li>24/7 support</li>
+                                                <li>Custom integrations</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <input type="hidden" id="selected_plan" name="plan" value="pro">
+                        </div>
+
+                        <!-- Terms and Conditions -->
+                        <div class="mb-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="terms_accepted" name="terms_accepted" required>
+                                <label class="form-check-label" for="terms_accepted">
+                                    I agree to the <a href="#" onclick="showTerms()">Terms of Service</a> and 
+                                    <a href="#" onclick="showPrivacy()">Privacy Policy</a> *
+                                </label>
+                                <div class="invalid-feedback">
+                                    You must agree to the terms and conditions.
+                                </div>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="marketing_consent" name="marketing_consent">
+                                <label class="form-check-label" for="marketing_consent">
+                                    I would like to receive marketing communications about new features and updates
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg" id="submitBtn">
+                                <i class="bi bi-rocket-takeoff me-2"></i>Create Account & Start Free Trial
+                            </button>
+                        </div>
+
+                        <!-- Login Link -->
+                        <div class="text-center mt-4">
+                            <p class="mb-0">
+                                Already have an account? 
+                                <a href="{{ url_for('auth.login') }}" class="text-decoration-none">Sign in here</a>
+                            </p>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Terms of Service Modal -->
+<div class="modal fade" id="termsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Terms of Service</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <h6>1. Acceptance of Terms</h6>
+                <p>By accessing and using this SaaS ERP service, you accept and agree to be bound by the terms and provision of this agreement.</p>
+                
+                <h6>2. Use License</h6>
+                <p>Permission is granted to temporarily download one copy of the materials (information or software) on SaaS ERP's website for personal, non-commercial transitory viewing only.</p>
+                
+                <h6>3. Disclaimer</h6>
+                <p>The materials on SaaS ERP's website are provided on an 'as is' basis. SaaS ERP makes no warranties, expressed or implied, and hereby disclaims and negates all other warranties including without limitation, implied warranties or conditions of merchantability, fitness for a particular purpose, or non-infringement of intellectual property or other violation of rights.</p>
+                
+                <h6>4. Limitations</h6>
+                <p>In no event shall SaaS ERP or its suppliers be liable for any damages (including, without limitation, damages for loss of data or profit, or due to business interruption) arising out of the use or inability to use the materials on SaaS ERP's website.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Privacy Policy Modal -->
+<div class="modal fade" id="privacyModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Privacy Policy</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <h6>1. Information We Collect</h6>
+                <p>We collect information you provide directly to us, such as when you create an account, update your profile, or contact us for support.</p>
+                
+                <h6>2. How We Use Your Information</h6>
+                <p>We use the information we collect to provide, maintain, and improve our services, to communicate with you, and to develop new features.</p>
+                
+                <h6>3. Information Sharing</h6>
+                <p>We do not sell, trade, or otherwise transfer your personal information to third parties without your consent, except as described in this policy.</p>
+                
+                <h6>4. Data Security</h6>
+                <p>We implement appropriate security measures to protect your personal information against unauthorized access, alteration, disclosure, or destruction.</p>
+                
+                <h6>5. Your Rights</h6>
+                <p>You have the right to access, update, or delete your personal information. You can also opt out of marketing communications at any time.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.plan-card {
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.plan-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+.plan-card.selected {
+    border-color: #007bff;
+    background-color: #f8f9ff;
+}
+
+.plan-card.border-primary {
+    border-width: 2px !important;
+}
+
+.password-strength {
+    font-size: 0.875rem;
+}
+
+.password-strength.weak {
+    color: #dc3545;
+}
+
+.password-strength.medium {
+    color: #ffc107;
+}
+
+.password-strength.strong {
+    color: #28a745;
+}
+
+.card-header.bg-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+    transform: translateY(-1px);
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let selectedPlan = 'pro';
+
+// Plan selection
+document.querySelectorAll('.plan-card').forEach(card => {
+    card.addEventListener('click', function() {
+        // Remove selected class from all cards
+        document.querySelectorAll('.plan-card').forEach(c => c.classList.remove('selected'));
+        
+        // Add selected class to clicked card
+        this.classList.add('selected');
+        
+        // Update hidden input
+        selectedPlan = this.dataset.plan;
+        document.getElementById('selected_plan').value = selectedPlan;
+        
+        // Update submit button text based on plan
+        const submitBtn = document.getElementById('submitBtn');
+        if (selectedPlan === 'enterprise') {
+            submitBtn.innerHTML = '<i class="bi bi-rocket-takeoff me-2"></i>Create Enterprise Account';
+        } else {
+            submitBtn.innerHTML = '<i class="bi bi-rocket-takeoff me-2"></i>Create Account & Start Free Trial';
+        }
+    });
+});
+
+// Password strength checker
+document.getElementById('password').addEventListener('input', function() {
+    const password = this.value;
+    const strengthIndicator = document.getElementById('passwordStrength');
+    
+    if (password.length === 0) {
+        strengthIndicator.textContent = '';
+        strengthIndicator.className = 'password-strength';
+        return;
+    }
+    
+    let strength = 0;
+    let feedback = '';
+    
+    if (password.length >= 8) strength++;
+    if (/[a-z]/.test(password)) strength++;
+    if (/[A-Z]/.test(password)) strength++;
+    if (/[0-9]/.test(password)) strength++;
+    if (/[^A-Za-z0-9]/.test(password)) strength++;
+    
+    if (strength < 3) {
+        feedback = 'Weak password';
+        strengthIndicator.className = 'password-strength weak';
+    } else if (strength < 5) {
+        feedback = 'Medium strength password';
+        strengthIndicator.className = 'password-strength medium';
+    } else {
+        feedback = 'Strong password';
+        strengthIndicator.className = 'password-strength strong';
+    }
+    
+    strengthIndicator.textContent = feedback;
+});
+
+// Password confirmation checker
+document.getElementById('confirm_password').addEventListener('input', function() {
+    const password = document.getElementById('password').value;
+    const confirmPassword = this.value;
+    
+    if (confirmPassword !== password) {
+        this.setCustomValidity('Passwords do not match');
+    } else {
+        this.setCustomValidity('');
+    }
+});
+
+// Toggle password visibility
+function togglePassword(inputId) {
+    const input = document.getElementById(inputId);
+    const button = input.nextElementSibling;
+    const icon = button.querySelector('i');
+    
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.className = 'bi bi-eye-slash';
+    } else {
+        input.type = 'password';
+        icon.className = 'bi bi-eye';
+    }
+}
+
+// Form validation
+document.getElementById('registrationForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    if (!this.checkValidity()) {
+        e.stopPropagation();
+        this.classList.add('was-validated');
+        return;
+    }
+    
+    // Show loading state
+    const submitBtn = document.getElementById('submitBtn');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Creating Account...';
+    submitBtn.disabled = true;
+    
+    // Submit form
+    const formData = new FormData(this);
+    
+    fetch('/register', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification('Account created successfully! Redirecting to dashboard...', 'success');
+            setTimeout(() => {
+                window.location.href = data.redirect_url || '/dashboard';
+            }, 2000);
+        } else {
+            showNotification(data.message || 'Failed to create account', 'error');
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('An error occurred while creating your account', 'error');
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+    });
+});
+
+// Show terms modal
+function showTerms() {
+    const modal = new bootstrap.Modal(document.getElementById('termsModal'));
+    modal.show();
+}
+
+// Show privacy modal
+function showPrivacy() {
+    const modal = new bootstrap.Modal(document.getElementById('privacyModal'));
+    modal.show();
+}
+
+// Show notification
+function showNotification(message, type) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type === 'error' ? 'danger' : type} alert-dismissible fade show position-fixed`;
+    alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.body.appendChild(alertDiv);
+    
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+        alertDiv.remove();
+    }, 5000);
+}
+
+// Auto-save form data to localStorage
+document.querySelectorAll('#registrationForm input, #registrationForm select, #registrationForm textarea').forEach(input => {
+    input.addEventListener('input', function() {
+        const formData = new FormData(document.getElementById('registrationForm'));
+        const data = {};
+        for (let [key, value] of formData.entries()) {
+            data[key] = value;
+        }
+        localStorage.setItem('registrationFormData', JSON.stringify(data));
+    });
+});
+
+// Restore form data from localStorage
+document.addEventListener('DOMContentLoaded', function() {
+    const savedData = localStorage.getItem('registrationFormData');
+    if (savedData) {
+        const data = JSON.parse(savedData);
+        Object.keys(data).forEach(key => {
+            const input = document.querySelector(`[name="${key}"]`);
+            if (input) {
+                input.value = data[key];
+            }
+        });
+    }
+});
+
+// Clear localStorage after successful registration
+function clearFormData() {
+    localStorage.removeItem('registrationFormData');
+}
+</script>
+{% endblock %}

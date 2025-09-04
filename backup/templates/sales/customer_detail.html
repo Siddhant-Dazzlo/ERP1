@@ -1,0 +1,459 @@
+{% extends "base.html" %}
+
+{% block title %}Customer Details - {{ customer.name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="page-title-box">
+                <div class="page-title-right">
+                    <ol class="breadcrumb m-0">
+                        <li class="breadcrumb-item"><a href="{{ url_for('main.dashboard') }}">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="{{ url_for('sales.customers') }}">Customers</a></li>
+                        <li class="breadcrumb-item active">Customer Details</li>
+                    </ol>
+                </div>
+                <h4 class="page-title">Customer Details</h4>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Customer Profile Card -->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <div class="avatar-lg mx-auto mb-3">
+                        {% if customer.logo_url %}
+                            <img src="{{ customer.logo_url }}" class="rounded img-thumbnail" alt="Company Logo" style="width: 120px; height: 120px;">
+                        {% else %}
+                            <div class="avatar-title rounded bg-primary mx-auto" style="width: 120px; height: 120px; line-height: 120px; font-size: 3rem;">
+                                {{ customer.name[0] }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <h4 class="mb-1">{{ customer.name }}</h4>
+                    <p class="text-muted mb-2">{{ customer.industry or 'Industry not specified' }}</p>
+                    <span class="badge bg-{{ 'success' if customer.status.value == 'active' else 'warning' if customer.status.value == 'prospect' else 'danger' }} fs-6">
+                        {{ customer.status.value.title() }}
+                    </span>
+                    
+                    <div class="mt-3">
+                        <a href="{{ url_for('sales.edit_customer', customer_id=customer.id) }}" class="btn btn-primary me-2">
+                            <i class="bi bi-pencil me-1"></i>Edit Customer
+                        </a>
+                        <button class="btn btn-outline-success" onclick="convertToCustomer({{ customer.id }})">
+                            <i class="bi bi-check-circle me-1"></i>Convert
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Quick Stats</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <div class="stats-card p-3">
+                                <div class="stats-number">{{ customer.total_orders or 0 }}</div>
+                                <div class="stats-label">Total Orders</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="stats-card p-3">
+                                <div class="stats-number">₹{{ "{:,.2f}".format(customer.total_revenue or 0) }}</div>
+                                <div class="stats-label">Total Revenue</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row text-center mt-2">
+                        <div class="col-6">
+                            <div class="stats-card p-3">
+                                <div class="stats-number">{{ customer.leads_count or 0 }}</div>
+                                <div class="stats-label">Leads</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="stats-card p-3">
+                                <div class="stats-number">{{ customer.days_since_created }}</div>
+                                <div class="stats-label">Days Active</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact Information -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Contact Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="bi bi-envelope me-3 text-primary"></i>
+                        <div>
+                            <strong>Email</strong><br>
+                            <a href="mailto:{{ customer.email }}">{{ customer.email }}</a>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="bi bi-telephone me-3 text-success"></i>
+                        <div>
+                            <strong>Phone</strong><br>
+                            <a href="tel:{{ customer.phone }}">{{ customer.phone or 'Not provided' }}</a>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="bi bi-globe me-3 text-info"></i>
+                        <div>
+                            <strong>Website</strong><br>
+                            {% if customer.website %}
+                                <a href="{{ customer.website }}" target="_blank">{{ customer.website }}</a>
+                            {% else %}
+                                Not provided
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-geo-alt me-3 text-warning"></i>
+                        <div>
+                            <strong>Location</strong><br>
+                            {{ customer.city }}, {{ customer.state or '' }} {{ customer.country or '' }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Customer Details -->
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Company Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Company Name</label>
+                                <p class="form-control-plaintext">{{ customer.name }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Industry</label>
+                                <p class="form-control-plaintext">{{ customer.industry or 'Not specified' }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Company Size</label>
+                                <p class="form-control-plaintext">{{ customer.company_size or 'Not specified' }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Annual Revenue</label>
+                                <p class="form-control-plaintext">{{ customer.annual_revenue or 'Not specified' }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Status</label>
+                                <p class="form-control-plaintext">
+                                    <span class="badge bg-{{ 'success' if customer.status.value == 'active' else 'warning' if customer.status.value == 'prospect' else 'danger' }}">
+                                        {{ customer.status.value.title() }}
+                                    </span>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Source</label>
+                                <p class="form-control-plaintext">{{ customer.source.value.title() if customer.source else 'Not specified' }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Description</label>
+                        <p class="form-control-plaintext">{{ customer.description or 'No description available' }}</p>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Created Date</label>
+                                <p class="form-control-plaintext">{{ customer.created_at.strftime('%B %d, %Y') if customer.created_at else 'N/A' }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Last Updated</label>
+                                <p class="form-control-plaintext">{{ customer.updated_at.strftime('%B %d, %Y') if customer.updated_at else 'N/A' }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Address Information -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Address Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Street Address</label>
+                                <p class="form-control-plaintext">{{ customer.street_address or 'Not provided' }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">City</label>
+                                <p class="form-control-plaintext">{{ customer.city or 'Not provided' }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">State/Province</label>
+                                <p class="form-control-plaintext">{{ customer.state or 'Not provided' }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Postal Code</label>
+                                <p class="form-control-plaintext">{{ customer.postal_code or 'Not provided' }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Country</label>
+                                <p class="form-control-plaintext">{{ customer.country or 'Not provided' }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Customer Activity -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Recent Activity</h5>
+                    <div>
+                        <button class="btn btn-outline-primary btn-sm" onclick="refreshActivity()">
+                            <i class="bi bi-arrow-clockwise me-1"></i>Refresh
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Activity</th>
+                                    <th>Details</th>
+                                    <th>User</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if customer_activities %}
+                                    {% for activity in customer_activities %}
+                                    <tr>
+                                        <td>{{ activity.timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
+                                        <td>
+                                            <span class="badge bg-{{ 'primary' if activity.type == 'created' else 'success' if activity.type == 'updated' else 'info' if activity.type == 'contacted' else 'warning' }}">
+                                                {{ activity.type.title() }}
+                                            </span>
+                                        </td>
+                                        <td>{{ activity.details }}</td>
+                                        <td>{{ activity.user.get_full_name() if activity.user else 'System' }}</td>
+                                        <td>
+                                            {% if activity.action_url %}
+                                                <a href="{{ activity.action_url }}" class="btn btn-sm btn-outline-primary">
+                                                    <i class="bi bi-eye me-1"></i>View
+                                                </a>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="5" class="text-center text-muted">No recent activity</td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Related Records -->
+    <div class="row">
+        <!-- Leads -->
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Related Leads</h5>
+                    <a href="{{ url_for('sales.new_lead') }}?customer_id={{ customer.id }}" class="btn btn-sm btn-primary">
+                        <i class="bi bi-plus me-1"></i>Add Lead
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if related_leads %}
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Lead</th>
+                                        <th>Status</th>
+                                        <th>Value</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for lead in related_leads %}
+                                    <tr>
+                                        <td>
+                                            <div>
+                                                <strong>{{ lead.company_name or lead.contact_name }}</strong><br>
+                                                <small class="text-muted">{{ lead.email }}</small>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-{{ 'success' if lead.status.value == 'qualified' else 'warning' if lead.status.value == 'prospect' else 'info' }}">
+                                                {{ lead.status.value.title() }}
+                                            </span>
+                                        </td>
+                                        <td>₹{{ "{:,.2f}".format(lead.estimated_value or 0) }}</td>
+                                        <td>
+                                            <a href="{{ url_for('sales.lead_detail', lead_id=lead.id) }}" class="btn btn-sm btn-outline-primary">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted py-3">
+                            <i class="bi bi-person-plus fs-1 mb-3"></i>
+                            <p>No leads associated with this customer</p>
+                            <a href="{{ url_for('sales.new_lead') }}?customer_id={{ customer.id }}" class="btn btn-primary">
+                                <i class="bi bi-plus me-1"></i>Create Lead
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Orders/Invoices -->
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Recent Orders</h5>
+                    <a href="{{ url_for('sales.new_invoice') }}?customer_id={{ customer.id }}" class="btn btn-sm btn-primary">
+                        <i class="bi bi-plus me-1"></i>Create Invoice
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if recent_orders %}
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Order #</th>
+                                        <th>Date</th>
+                                        <th>Amount</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for order in recent_orders %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ order.order_number }}</strong>
+                                        </td>
+                                        <td>{{ order.order_date.strftime('%Y-%m-%d') }}</td>
+                                        <td>₹{{ "{:,.2f}".format(order.total_amount) }}</td>
+                                        <td>
+                                            <span class="badge bg-{{ 'success' if order.status.value == 'completed' else 'warning' if order.status.value == 'pending' else 'danger' }}">
+                                                {{ order.status.value.title() }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted py-3">
+                            <i class="bi bi-cart fs-1 mb-3"></i>
+                            <p>No orders found for this customer</p>
+                            <a href="{{ url_for('sales.new_invoice') }}?customer_id={{ customer.id }}" class="btn btn-primary">
+                                <i class="bi bi-plus me-1"></i>Create Invoice
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function convertToCustomer(customerId) {
+    if (confirm('Convert this prospect to an active customer?')) {
+        fetch(`/sales/customers/${customerId}/convert`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Customer converted successfully!');
+                location.reload();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        });
+    }
+}
+
+function refreshActivity() {
+    location.reload();
+}
+
+// Auto-refresh every 5 minutes
+setInterval(function() {
+    refreshActivity();
+}, 300000);
+</script>
+{% endblock %}

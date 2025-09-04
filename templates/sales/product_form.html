@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} - SaaS ERP{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">{{ title }}</h1>
+            <p class="text-muted">Add or edit product information</p>
+        </div>
+        <div>
+            <a href="{{ url_for('sales.products') }}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-2"></i>Back to Products
+            </a>
+        </div>
+    </div>
+
+    <!-- Product Form -->
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Product Details</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" enctype="multipart/form-data">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="name" class="form-label">Product Name *</label>
+                                {{ form.name(class="form-control", placeholder="Enter product name") }}
+                                {% if form.name.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.name.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="sku" class="form-label">SKU</label>
+                                {{ form.sku(class="form-control", placeholder="Enter SKU") }}
+                                {% if form.sku.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.sku.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="price" class="form-label">Price *</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    {{ form.price(class="form-control", placeholder="0.00", step="0.01") }}
+                                </div>
+                                {% if form.price.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.price.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="cost" class="form-label">Cost</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    {{ form.cost(class="form-control", placeholder="0.00", step="0.01") }}
+                                </div>
+                                {% if form.cost.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.cost.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="category" class="form-label">Category</label>
+                                {{ form.category(class="form-select") }}
+                                {% if form.category.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.category.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="stock_quantity" class="form-label">Stock Quantity</label>
+                                {{ form.stock_quantity(class="form-control", placeholder="0", type="number", min="0") }}
+                                {% if form.stock_quantity.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.stock_quantity.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-12">
+                                <label for="description" class="form-label">Description</label>
+                                {{ form.description(class="form-control", rows="4", placeholder="Enter product description...") }}
+                                {% if form.description.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.description.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="image" class="form-label">Product Image</label>
+                                {{ form.image(class="form-control", accept="image/*") }}
+                                {% if form.image.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.image.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                <small class="text-muted">Max size: 5MB. Supported formats: JPG, PNG, GIF</small>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="is_active" class="form-label">Status</label>
+                                <div class="form-check form-switch">
+                                    {{ form.is_active(class="form-check-input") }}
+                                    <label class="form-check-label" for="is_active">
+                                        Active
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <hr class="my-4">
+                        
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="{{ url_for('sales.products') }}" class="btn btn-outline-secondary">
+                                Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle me-2"></i>
+                                {{ 'Update Product' if form.id.data else 'Create Product' }}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Auto-generate SKU from product name
+document.getElementById('name').addEventListener('input', function() {
+    const name = this.value;
+    const skuField = document.getElementById('sku');
+    if (name && !skuField.value) {
+        const sku = name.replace(/[^a-zA-Z0-9]/g, '').toUpperCase().substring(0, 8);
+        skuField.value = sku;
+    }
+});
+
+// Calculate profit margin
+document.getElementById('price').addEventListener('input', calculateProfit);
+document.getElementById('cost').addEventListener('input', calculateProfit);
+
+function calculateProfit() {
+    const price = parseFloat(document.getElementById('price').value) || 0;
+    const cost = parseFloat(document.getElementById('cost').value) || 0;
+    
+    if (price > 0 && cost > 0) {
+        const profit = price - cost;
+        const margin = (profit / price) * 100;
+        
+        // You can display this information somewhere if needed
+        console.log(`Profit: $${profit.toFixed(2)}, Margin: ${margin.toFixed(1)}%`);
+    }
+}
+</script>
+{% endblock %}

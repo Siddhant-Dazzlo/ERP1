@@ -1,0 +1,435 @@
+{% extends "base.html" %}
+
+{% block title %}Usage Analytics{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="page-title-box">
+                <div class="page-title-right">
+                    <ol class="breadcrumb m-0">
+                        <li class="breadcrumb-item"><a href="{{ url_for('main.dashboard') }}">Dashboard</a></li>
+                        <li class="breadcrumb-item active">Usage Analytics</li>
+                    </ol>
+                </div>
+                <h4 class="page-title">Usage Analytics</h4>
+            </div>
+        </div>
+    </div>
+
+    <!-- Usage Overview -->
+    <div class="row">
+        <div class="col-xl-3 col-md-6">
+            <div class="stats-card">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <div class="stats-number">{{ current_usage.users }}</div>
+                        <div class="stats-label">Active Users</div>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-people fs-1"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="stats-card">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <div class="stats-number">{{ current_usage.storage }}GB</div>
+                        <div class="stats-label">Storage Used</div>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-hdd fs-1"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="stats-card">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <div class="stats-number">{{ current_usage.api_calls }}</div>
+                        <div class="stats-label">API Calls</div>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-code-slash fs-1"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="stats-card">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <div class="stats-number">{{ usage_percentage }}%</div>
+                        <div class="stats-label">Plan Usage</div>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-pie-chart fs-1"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Usage Charts -->
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Usage Trends</h5>
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="updateUsageChart('7d')">7 Days</button>
+                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="updateUsageChart('30d')">30 Days</button>
+                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="updateUsageChart('90d')">90 Days</button>
+                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="updateUsageChart('1y')">1 Year</button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <canvas id="usageChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Plan Limits -->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Plan Limits</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Users -->
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Users</span>
+                            <span>{{ current_usage.users }}/{{ plan_limits.users }}</span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-{{ 'success' if usage_percentage < 80 else 'warning' if usage_percentage < 95 else 'danger' }}" 
+                                 style="width: {{ (current_usage.users / plan_limits.users) * 100 }}%"></div>
+                        </div>
+                        <small class="text-muted">{{ plan_limits.users - current_usage.users }} users remaining</small>
+                    </div>
+
+                    <!-- Storage -->
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Storage</span>
+                            <span>{{ current_usage.storage }}GB/{{ plan_limits.storage }}GB</span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-{{ 'success' if (current_usage.storage / plan_limits.storage) * 100 < 80 else 'warning' if (current_usage.storage / plan_limits.storage) * 100 < 95 else 'danger' }}" 
+                                 style="width: {{ (current_usage.storage / plan_limits.storage) * 100 }}%"></div>
+                        </div>
+                        <small class="text-muted">{{ plan_limits.storage - current_usage.storage }}GB remaining</small>
+                    </div>
+
+                    <!-- API Calls -->
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>API Calls</span>
+                            <span>{{ current_usage.api_calls }}/{{ plan_limits.api_calls }}</span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-{{ 'success' if (current_usage.api_calls / plan_limits.api_calls) * 100 < 80 else 'warning' if (current_usage.api_calls / plan_limits.api_calls) * 100 < 95 else 'danger' }}" 
+                                 style="width: {{ (current_usage.api_calls / plan_limits.api_calls) * 100 }}%"></div>
+                        </div>
+                        <small class="text-muted">{{ plan_limits.api_calls - current_usage.api_calls }} calls remaining</small>
+                    </div>
+
+                    <!-- Database -->
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Database</span>
+                            <span>{{ current_usage.database }}GB/{{ plan_limits.database }}GB</span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-{{ 'success' if (current_usage.database / plan_limits.database) * 100 < 80 else 'warning' if (current_usage.database / plan_limits.database) * 100 < 95 else 'danger' }}" 
+                                 style="width: {{ (current_usage.database / plan_limits.database) * 100 }}%"></div>
+                        </div>
+                        <small class="text-muted">{{ plan_limits.database - current_usage.database }}GB remaining</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Feature Usage -->
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Feature Usage</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="featureUsageChart" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- User Activity -->
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">User Activity</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="userActivityChart" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detailed Usage -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Detailed Usage</h5>
+                    <div>
+                        <button class="btn btn-outline-success me-2" onclick="exportUsageData()">
+                            <i class="bi bi-download me-1"></i>Export
+                        </button>
+                        <button class="btn btn-outline-info" onclick="generateUsageReport()">
+                            <i class="bi bi-file-earmark-text me-1"></i>Generate Report
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Users</th>
+                                    <th>Storage (GB)</th>
+                                    <th>API Calls</th>
+                                    <th>Database (GB)</th>
+                                    <th>Bandwidth (GB)</th>
+                                    <th>Cost</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for usage in detailed_usage %}
+                                <tr>
+                                    <td>{{ usage.date.strftime('%Y-%m-%d') }}</td>
+                                    <td>{{ usage.users }}</td>
+                                    <td>{{ "{:.2f}".format(usage.storage) }}</td>
+                                    <td>{{ usage.api_calls }}</td>
+                                    <td>{{ "{:.2f}".format(usage.database) }}</td>
+                                    <td>{{ "{:.2f}".format(usage.bandwidth) }}</td>
+                                    <td>₹{{ "{:.2f}".format(usage.cost) }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Usage Alerts -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Usage Alerts</h5>
+                </div>
+                <div class="card-body">
+                    {% if usage_alerts %}
+                        {% for alert in usage_alerts %}
+                        <div class="alert alert-{{ 'danger' if alert.severity == 'critical' else 'warning' if alert.severity == 'high' else 'info' }} alert-dismissible fade show" role="alert">
+                            <div class="d-flex">
+                                <i class="bi bi-{{ 'exclamation-triangle' if alert.severity == 'critical' else 'exclamation-circle' if alert.severity == 'high' else 'info-circle' }} fs-4 me-3"></i>
+                                <div>
+                                    <strong>{{ alert.title }}</strong>
+                                    <p class="mb-0">{{ alert.message }}</p>
+                                    <small class="text-muted">Triggered at {{ alert.timestamp.strftime('%Y-%m-%d %H:%M') }}</small>
+                                </div>
+                            </div>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center text-muted py-3">
+                            <i class="bi bi-check-circle fs-1 text-success"></i>
+                            <p class="mb-0">No usage alerts</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Usage Recommendations -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Usage Recommendations</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for recommendation in usage_recommendations %}
+                        <div class="col-md-6 mb-3">
+                            <div class="card border-{{ 'success' if recommendation.type == 'optimization' else 'info' if recommendation.type == 'upgrade' else 'warning' }}">
+                                <div class="card-body">
+                                    <div class="d-flex">
+                                        <div class="me-3">
+                                            <i class="bi bi-{{ 'lightbulb' if recommendation.type == 'optimization' else 'arrow-up-circle' if recommendation.type == 'upgrade' else 'exclamation-triangle' }} fs-2 text-{{ 'success' if recommendation.type == 'optimization' else 'info' if recommendation.type == 'upgrade' else 'warning' }}"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="card-title">{{ recommendation.title }}</h6>
+                                            <p class="card-text">{{ recommendation.description }}</p>
+                                            {% if recommendation.estimated_savings %}
+                                                <small class="text-muted">Estimated savings: ₹{{ "{:.2f}".format(recommendation.estimated_savings) }}/month</small>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+// Usage Trends Chart
+const usageCtx = document.getElementById('usageChart').getContext('2d');
+const usageChart = new Chart(usageCtx, {
+    type: 'line',
+    data: {
+        labels: {{ usage_chart_labels | tojson }},
+        datasets: [{
+            label: 'Users',
+            data: {{ users_data | tojson }},
+            borderColor: '#667eea',
+            backgroundColor: 'rgba(102, 126, 234, 0.1)',
+            tension: 0.4,
+            fill: true
+        }, {
+            label: 'Storage (GB)',
+            data: {{ storage_data | tojson }},
+            borderColor: '#28a745',
+            backgroundColor: 'rgba(40, 167, 69, 0.1)',
+            tension: 0.4,
+            fill: true
+        }, {
+            label: 'API Calls',
+            data: {{ api_calls_data | tojson }},
+            borderColor: '#ffc107',
+            backgroundColor: 'rgba(255, 193, 7, 0.1)',
+            tension: 0.4,
+            fill: true
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'top'
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+
+// Feature Usage Chart
+const featureUsageCtx = document.getElementById('featureUsageChart').getContext('2d');
+const featureUsageChart = new Chart(featureUsageCtx, {
+    type: 'doughnut',
+    data: {
+        labels: {{ feature_labels | tojson }},
+        datasets: [{
+            data: {{ feature_usage_data | tojson }},
+            backgroundColor: ['#667eea', '#28a745', '#ffc107', '#dc3545', '#17a2b8'],
+            borderWidth: 0
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    }
+});
+
+// User Activity Chart
+const userActivityCtx = document.getElementById('userActivityChart').getContext('2d');
+const userActivityChart = new Chart(userActivityCtx, {
+    type: 'bar',
+    data: {
+        labels: {{ user_activity_labels | tojson }},
+        datasets: [{
+            label: 'Active Users',
+            data: {{ user_activity_data | tojson }},
+            backgroundColor: 'rgba(102, 126, 234, 0.8)',
+            borderColor: '#667eea',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: false
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+
+function updateUsageChart(period) {
+    // Update chart data based on selected period
+    fetch(`/billing/usage/chart-data?period=${period}`)
+        .then(response => response.json())
+        .then(data => {
+            usageChart.data.labels = data.labels;
+            usageChart.data.datasets[0].data = data.users;
+            usageChart.data.datasets[1].data = data.storage;
+            usageChart.data.datasets[2].data = data.api_calls;
+            usageChart.update();
+        });
+}
+
+function exportUsageData() {
+    if (confirm('Export usage data to CSV format?')) {
+        window.location.href = "{{ url_for('billing.export_usage_data') }}";
+    }
+}
+
+function generateUsageReport() {
+    if (confirm('Generate comprehensive usage report?')) {
+        window.location.href = "{{ url_for('billing.generate_usage_report') }}";
+    }
+}
+
+// Auto-refresh every 5 minutes
+setInterval(function() {
+    location.reload();
+}, 300000);
+</script>
+{% endblock %}

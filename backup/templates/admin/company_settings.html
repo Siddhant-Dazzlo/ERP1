@@ -1,0 +1,390 @@
+{% extends "base.html" %}
+
+{% block title %}Company Settings{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="page-title-box">
+                <div class="page-title-right">
+                    <ol class="breadcrumb m-0">
+                        <li class="breadcrumb-item"><a href="{{ url_for('main.dashboard') }}">Dashboard</a></li>
+                        <li class="breadcrumb-item active">Company Settings</li>
+                    </ol>
+                </div>
+                <h4 class="page-title">Company Settings</h4>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Company Information -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Company Information</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('admin.company_settings') }}">
+                        {{ company_form.hidden_tag() }}
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ company_form.company_name.label(class="form-label") }}
+                                    {{ company_form.company_name(class="form-control", placeholder="Enter company name") }}
+                                    {% if company_form.company_name.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in company_form.company_name.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ company_form.legal_name.label(class="form-label") }}
+                                    {{ company_form.legal_name(class="form-control", placeholder="Enter legal company name") }}
+                                    {% if company_form.legal_name.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in company_form.legal_name.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ company_form.tax_id.label(class="form-label") }}
+                                    {{ company_form.tax_id(class="form-control", placeholder="Enter tax ID/EIN") }}
+                                    {% if company_form.tax_id.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in company_form.tax_id.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ company_form.industry.label(class="form-label") }}
+                                    {{ company_form.industry(class="form-select") }}
+                                    {% if company_form.industry.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in company_form.industry.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ company_form.description.label(class="form-label") }}
+                            {{ company_form.description(class="form-control", rows="3", placeholder="Enter company description") }}
+                            {% if company_form.description.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in company_form.description.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle me-1"></i>Update Company Info
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Contact Information -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Contact Information</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('admin.company_settings') }}">
+                        {{ contact_form.hidden_tag() }}
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ contact_form.email.label(class="form-label") }}
+                                    {{ contact_form.email(class="form-control", placeholder="Enter company email") }}
+                                    {% if contact_form.email.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in contact_form.email.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ contact_form.phone.label(class="form-label") }}
+                                    {{ contact_form.phone(class="form-control", placeholder="Enter company phone") }}
+                                    {% if contact_form.phone.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in contact_form.phone.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ contact_form.website.label(class="form-label") }}
+                            {{ contact_form.website(class="form-control", placeholder="Enter company website") }}
+                            {% if contact_form.website.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in contact_form.website.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle me-1"></i>Update Contact Info
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Address Information -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Address Information</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('admin.company_settings') }}">
+                        {{ address_form.hidden_tag() }}
+                        
+                        <div class="mb-3">
+                            {{ address_form.street_address.label(class="form-label") }}
+                            {{ address_form.street_address(class="form-control", placeholder="Enter street address") }}
+                            {% if address_form.street_address.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in address_form.street_address.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    {{ address_form.city.label(class="form-label") }}
+                                    {{ address_form.city(class="form-control", placeholder="Enter city") }}
+                                    {% if address_form.city.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in address_form.city.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    {{ address_form.state.label(class="form-label") }}
+                                    {{ address_form.state(class="form-control", placeholder="Enter state") }}
+                                    {% if address_form.state.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in address_form.state.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    {{ address_form.postal_code.label(class="form-label") }}
+                                    {{ address_form.postal_code(class="form-control", placeholder="Enter postal code") }}
+                                    {% if address_form.postal_code.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in address_form.postal_code.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ address_form.country.label(class="form-label") }}
+                            {{ address_form.country(class="form-select") }}
+                            {% if address_form.country.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in address_form.country.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle me-1"></i>Update Address
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <!-- Company Logo -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Company Logo</h5>
+                </div>
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        {% if company.logo_url %}
+                            <img src="{{ company.logo_url }}" alt="Company Logo" class="img-fluid rounded" style="max-width: 200px;">
+                        {% else %}
+                            <div class="bg-light rounded p-4">
+                                <i class="bi bi-building fs-1 text-muted"></i>
+                                <p class="text-muted mt-2">No logo uploaded</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <form method="POST" enctype="multipart/form-data" action="{{ url_for('admin.upload_logo') }}">
+                        {{ logo_form.hidden_tag() }}
+                        <div class="mb-3">
+                            {{ logo_form.logo(class="form-control", accept="image/*") }}
+                            {% if logo_form.logo.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in logo_form.logo.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-upload me-1"></i>Upload Logo
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- System Settings -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">System Settings</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('admin.company_settings') }}">
+                        {{ system_form.hidden_tag() }}
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Time Zone</label>
+                            {{ system_form.timezone(class="form-select") }}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Date Format</label>
+                            {{ system_form.date_format(class="form-select") }}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Currency</label>
+                            {{ system_form.currency(class="form-select") }}
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="form-check">
+                                {{ system_form.auto_backup(class="form-check-input") }}
+                                <label class="form-check-label" for="{{ system_form.auto_backup.id }}">
+                                    Enable Auto Backup
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="form-check">
+                                {{ system_form.email_notifications(class="form-check-input") }}
+                                <label class="form-check-label" for="{{ system_form.email_notifications.id }}">
+                                    Enable Email Notifications
+                                </label>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle me-1"></i>Update Settings
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-outline-warning" onclick="exportCompanyData()">
+                            <i class="bi bi-download me-1"></i>Export Company Data
+                        </button>
+                        <button class="btn btn-outline-info" onclick="generateCompanyReport()">
+                            <i class="bi bi-file-earmark-text me-1"></i>Generate Report
+                        </button>
+                        <button class="btn btn-outline-secondary" onclick="backupDatabase()">
+                            <i class="bi bi-database me-1"></i>Backup Database
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function exportCompanyData() {
+    if (confirm('Export company data to CSV format?')) {
+        window.location.href = "{{ url_for('admin.export_company_data') }}";
+    }
+}
+
+function generateCompanyReport() {
+    if (confirm('Generate comprehensive company report?')) {
+        window.location.href = "{{ url_for('admin.generate_company_report') }}";
+    }
+}
+
+function backupDatabase() {
+    if (confirm('Create a backup of the database? This may take a few minutes.')) {
+        fetch("{{ url_for('admin.backup_database') }}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Database backup created successfully!');
+            } else {
+                alert('Error: ' + data.message);
+            }
+        });
+    }
+}
+</script>
+{% endblock %}

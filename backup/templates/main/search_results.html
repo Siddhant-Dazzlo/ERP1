@@ -1,0 +1,421 @@
+{% extends "base.html" %}
+
+{% block title %}Search Results - {{ query }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="page-title-box">
+                <div class="page-title-right">
+                    <ol class="breadcrumb m-0">
+                        <li class="breadcrumb-item"><a href="{{ url_for('main.dashboard') }}">Dashboard</a></li>
+                        <li class="breadcrumb-item active">Search Results</li>
+                    </ol>
+                </div>
+                <h4 class="page-title">Search Results</h4>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <form method="GET" action="{{ url_for('main.search') }}" class="row g-3">
+                        <div class="col-lg-8">
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text">
+                                    <i class="bi bi-search"></i>
+                                </span>
+                                <input type="text" class="form-control" name="q" value="{{ query }}" placeholder="Search for anything...">
+                                <button class="btn btn-primary" type="submit">
+                                    Search
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <select name="type" class="form-select">
+                                        <option value="">All Types</option>
+                                        <option value="users" {{ 'selected' if request.args.get('type') == 'users' }}>Users</option>
+                                        <option value="customers" {{ 'selected' if request.args.get('type') == 'customers' }}>Customers</option>
+                                        <option value="leads" {{ 'selected' if request.args.get('type') == 'leads' }}>Leads</option>
+                                        <option value="products" {{ 'selected' if request.args.get('type') == 'products' }}>Products</option>
+                                        <option value="invoices" {{ 'selected' if request.args.get('type') == 'invoices' }}>Invoices</option>
+                                    </select>
+                                </div>
+                                <div class="col-6">
+                                    <select name="sort" class="form-select">
+                                        <option value="relevance" {{ 'selected' if request.args.get('sort') == 'relevance' }}>Relevance</option>
+                                        <option value="date" {{ 'selected' if request.args.get('sort') == 'date' }}>Date</option>
+                                        <option value="name" {{ 'selected' if request.args.get('sort') == 'name' }}>Name</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search Results Summary -->
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h5 class="mb-0">Search Results for "{{ query }}"</h5>
+                    <p class="text-muted mb-0">{{ total_results }} results found in {{ search_time }} seconds</p>
+                </div>
+                <div class="d-flex align-items-center">
+                    <span class="me-3">View:</span>
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-outline-primary active" onclick="setViewMode('list')">
+                            <i class="bi bi-list"></i>
+                        </button>
+                        <button type="button" class="btn btn-outline-primary" onclick="setViewMode('grid')">
+                            <i class="bi bi-grid"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search Results -->
+    <div class="row" id="searchResults">
+        {% if results %}
+            {% for result in results %}
+            <div class="col-12 mb-3 search-result-item">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-2">
+                                <div class="text-center">
+                                    {% if result.type == 'users' %}
+                                        <div class="avatar-lg mx-auto mb-2">
+                                            {% if result.avatar_url %}
+                                                <img src="{{ result.avatar_url }}" class="rounded-circle" alt="Avatar" style="width: 60px; height: 60px;">
+                                            {% else %}
+                                                <div class="avatar-title rounded-circle bg-primary" style="width: 60px; height: 60px; line-height: 60px; font-size: 1.5rem;">
+                                                    {{ result.first_name[0] }}{{ result.last_name[0] }}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                        <span class="badge bg-primary">{{ result.type.title() }}</span>
+                                    {% elif result.type == 'customers' %}
+                                        <div class="avatar-lg mx-auto mb-2">
+                                            {% if result.logo_url %}
+                                                <img src="{{ result.logo_url }}" class="rounded" alt="Logo" style="width: 60px; height: 60px;">
+                                            {% else %}
+                                                <div class="avatar-title rounded bg-success" style="width: 60px; height: 60px; line-height: 60px; font-size: 1.5rem;">
+                                                    {{ result.name[0] }}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                        <span class="badge bg-success">{{ result.type.title() }}</span>
+                                    {% elif result.type == 'leads' %}
+                                        <div class="avatar-lg mx-auto mb-2">
+                                            <div class="avatar-title rounded bg-warning" style="width: 60px; height: 60px; line-height: 60px; font-size: 1.5rem;">
+                                                <i class="bi bi-person-plus"></i>
+                                            </div>
+                                        </div>
+                                        <span class="badge bg-warning">{{ result.type.title() }}</span>
+                                    {% elif result.type == 'products' %}
+                                        <div class="avatar-lg mx-auto mb-2">
+                                            {% if result.image_url %}
+                                                <img src="{{ result.image_url }}" class="rounded" alt="Product" style="width: 60px; height: 60px;">
+                                            {% else %}
+                                                <div class="avatar-title rounded bg-info" style="width: 60px; height: 60px; line-height: 60px; font-size: 1.5rem;">
+                                                    <i class="bi bi-box"></i>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                        <span class="badge bg-info">{{ result.type.title() }}</span>
+                                    {% elif result.type == 'invoices' %}
+                                        <div class="avatar-lg mx-auto mb-2">
+                                            <div class="avatar-title rounded bg-secondary" style="width: 60px; height: 60px; line-height: 60px; font-size: 1.5rem;">
+                                                <i class="bi bi-receipt"></i>
+                                            </div>
+                                        </div>
+                                        <span class="badge bg-secondary">{{ result.type.title() }}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-7">
+                                <div class="search-result-content">
+                                    {% if result.type == 'users' %}
+                                        <h5 class="mb-1">
+                                            <a href="{{ url_for('admin.user_detail', user_id=result.id) }}" class="text-decoration-none">
+                                                {{ result.get_full_name() }}
+                                            </a>
+                                        </h5>
+                                        <p class="text-muted mb-2">{{ result.email }} • {{ result.role.value.replace('_', ' ').title() }}</p>
+                                        <p class="mb-0">{{ result.bio or 'No bio available' }}</p>
+                                    {% elif result.type == 'customers' %}
+                                        <h5 class="mb-1">
+                                            <a href="{{ url_for('sales.customer_detail', customer_id=result.id) }}" class="text-decoration-none">
+                                                {{ result.name }}
+                                            </a>
+                                        </h5>
+                                        <p class="text-muted mb-2">{{ result.email }} • {{ result.phone or 'No phone' }}</p>
+                                        <p class="mb-0">{{ result.description or 'No description available' }}</p>
+                                    {% elif result.type == 'leads' %}
+                                        <h5 class="mb-1">
+                                            <a href="{{ url_for('sales.lead_detail', lead_id=result.id) }}" class="text-decoration-none">
+                                                {{ result.company_name or result.contact_name }}
+                                            </a>
+                                        </h5>
+                                        <p class="text-muted mb-2">{{ result.email }} • {{ result.phone or 'No phone' }}</p>
+                                        <p class="mb-0">{{ result.notes or 'No notes available' }}</p>
+                                    {% elif result.type == 'products' %}
+                                        <h5 class="mb-1">
+                                            <a href="{{ url_for('sales.product_detail', product_id=result.id) }}" class="text-decoration-none">
+                                                {{ result.name }}
+                                            </a>
+                                        </h5>
+                                        <p class="text-muted mb-2">{{ result.category }} • ₹{{ "{:,.2f}".format(result.price) }}</p>
+                                        <p class="mb-0">{{ result.description or 'No description available' }}</p>
+                                    {% elif result.type == 'invoices' %}
+                                        <h5 class="mb-1">
+                                            <a href="{{ url_for('billing.invoice_detail', invoice_id=result.id) }}" class="text-decoration-none">
+                                                {{ result.invoice_number }}
+                                            </a>
+                                        </h5>
+                                        <p class="text-muted mb-2">{{ result.customer.name }} • ₹{{ "{:,.2f}".format(result.total_amount) }}</p>
+                                        <p class="mb-0">{{ result.notes or 'No notes available' }}</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-end">
+                                    <div class="mb-2">
+                                        <small class="text-muted">Created: {{ result.created_at.strftime('%Y-%m-%d') }}</small>
+                                    </div>
+                                    <div class="mb-2">
+                                        <small class="text-muted">Updated: {{ result.updated_at.strftime('%Y-%m-%d') }}</small>
+                                    </div>
+                                    <div class="search-actions">
+                                        {% if result.type == 'users' %}
+                                            <a href="{{ url_for('admin.user_detail', user_id=result.id) }}" class="btn btn-sm btn-outline-primary">
+                                                <i class="bi bi-eye me-1"></i>View
+                                            </a>
+                                        {% elif result.type == 'customers' %}
+                                            <a href="{{ url_for('sales.customer_detail', customer_id=result.id) }}" class="btn btn-sm btn-outline-primary">
+                                                <i class="bi bi-eye me-1"></i>View
+                                            </a>
+                                        {% elif result.type == 'leads' %}
+                                            <a href="{{ url_for('sales.lead_detail', lead_id=result.id) }}" class="btn btn-sm btn-outline-primary">
+                                                <i class="bi bi-eye me-1"></i>View
+                                            </a>
+                                        {% elif result.type == 'products' %}
+                                            <a href="{{ url_for('sales.product_detail', product_id=result.id) }}" class="btn btn-sm btn-outline-primary">
+                                                <i class="bi bi-eye me-1"></i>View
+                                            </a>
+                                        {% elif result.type == 'invoices' %}
+                                            <a href="{{ url_for('billing.invoice_detail', invoice_id=result.id) }}" class="btn btn-sm btn-outline-primary">
+                                                <i class="bi bi-eye me-1"></i>View
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body text-center py-5">
+                        <i class="bi bi-search fs-1 text-muted mb-3"></i>
+                        <h5>No results found</h5>
+                        <p class="text-muted">Try adjusting your search terms or filters to find what you're looking for.</p>
+                        <div class="mt-3">
+                            <a href="{{ url_for('main.help') }}" class="btn btn-outline-primary me-2">
+                                <i class="bi bi-question-circle me-1"></i>Get Help
+                            </a>
+                            <a href="{{ url_for('main.contact') }}" class="btn btn-outline-secondary">
+                                <i class="bi bi-headset me-1"></i>Contact Support
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Pagination -->
+    {% if pagination and pagination.pages > 1 %}
+    <div class="row">
+        <div class="col-12">
+            <nav aria-label="Search results pagination">
+                <ul class="pagination justify-content-center">
+                    {% if pagination.has_prev %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('main.search', q=query, page=pagination.prev_num, type=request.args.get('type'), sort=request.args.get('sort')) }}">Previous</a>
+                        </li>
+                    {% endif %}
+                    
+                    {% for page_num in pagination.iter_pages() %}
+                        {% if page_num %}
+                            {% if page_num != pagination.page %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('main.search', q=query, page=page_num, type=request.args.get('type'), sort=request.args.get('sort')) }}">{{ page_num }}</a>
+                                </li>
+                            {% else %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ page_num }}</span>
+                                </li>
+                            {% endif %}
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">...</span>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if pagination.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('main.search', q=query, page=pagination.next_num, type=request.args.get('type'), sort=request.args.get('sort')) }}">Next</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Search Suggestions -->
+    {% if suggestions %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Search Suggestions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for suggestion in suggestions %}
+                        <div class="col-md-3 mb-2">
+                            <a href="{{ url_for('main.search', q=suggestion) }}" class="btn btn-outline-secondary btn-sm w-100">
+                                {{ suggestion }}
+                            </a>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+let currentViewMode = 'list';
+
+function setViewMode(mode) {
+    currentViewMode = mode;
+    const resultsContainer = document.getElementById('searchResults');
+    const buttons = document.querySelectorAll('.btn-group .btn');
+    
+    // Update button states
+    buttons.forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+    
+    // Apply view mode
+    if (mode === 'grid') {
+        resultsContainer.classList.add('grid-view');
+        resultsContainer.classList.remove('list-view');
+    } else {
+        resultsContainer.classList.add('list-view');
+        resultsContainer.classList.remove('grid-view');
+    }
+}
+
+// Highlight search terms in results
+function highlightSearchTerms() {
+    const searchTerm = '{{ query }}';
+    if (searchTerm) {
+        const regex = new RegExp(`(${searchTerm})`, 'gi');
+        const contentElements = document.querySelectorAll('.search-result-content p, .search-result-content h5');
+        
+        contentElements.forEach(element => {
+            element.innerHTML = element.innerHTML.replace(regex, '<mark>$1</mark>');
+        });
+    }
+}
+
+// Initialize highlighting when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    highlightSearchTerms();
+});
+
+// Search suggestions
+document.querySelector('input[name="q"]').addEventListener('input', function() {
+    const query = this.value;
+    if (query.length > 2) {
+        // Implement live search suggestions here
+        // fetch(`/api/search/suggestions?q=${query}`)
+        //     .then(response => response.json())
+        //     .then(data => {
+        //         // Update suggestions
+        //     });
+    }
+});
+</script>
+
+<style>
+.search-result-item {
+    transition: all 0.3s ease;
+}
+
+.search-result-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.search-result-content h5 a:hover {
+    color: #667eea !important;
+}
+
+.grid-view .search-result-item {
+    margin-bottom: 1rem;
+}
+
+.grid-view .card {
+    height: 100%;
+}
+
+mark {
+    background-color: #fff3cd;
+    color: #856404;
+    padding: 0.1em 0.2em;
+    border-radius: 0.2em;
+}
+
+.search-actions .btn {
+    margin-left: 0.25rem;
+}
+
+.avatar-lg {
+    display: inline-block;
+}
+
+@media (max-width: 768px) {
+    .search-result-item .row {
+        flex-direction: column;
+    }
+    
+    .search-result-item .col-md-2,
+    .search-result-item .col-md-3 {
+        text-align: center;
+        margin-bottom: 1rem;
+    }
+}
+</style>
+{% endblock %}

@@ -1,0 +1,296 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="page-title-box">
+                <div class="page-title-right">
+                    <ol class="breadcrumb m-0">
+                        <li class="breadcrumb-item"><a href="{{ url_for('main.dashboard') }}">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="{{ url_for('sales.customers') }}">Customers</a></li>
+                        <li class="breadcrumb-item active">{{ 'Edit Customer' if customer else 'New Customer' }}</li>
+                    </ol>
+                </div>
+                <h4 class="page-title">{{ 'Edit Customer' if customer else 'New Customer' }}</h4>
+            </div>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="header-title">{{ 'Edit Customer Information' if customer else 'Create New Customer' }}</h4>
+                    <p class="text-muted mb-0">
+                        {% if customer %}
+                            Update customer details and information.
+                        {% else %}
+                            Add a new customer to your database.
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('sales.edit_customer', customer_id=customer.id) if customer else url_for('sales.new_customer') }}">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.first_name.label(class="form-label") }}
+                                    {{ form.first_name(class="form-control", placeholder="Enter first name") }}
+                                    {% if form.first_name.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.first_name.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.last_name.label(class="form-label") }}
+                                    {{ form.last_name(class="form-control", placeholder="Enter last name") }}
+                                    {% if form.last_name.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.last_name.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.email.label(class="form-label") }}
+                                    {{ form.email(class="form-control", placeholder="Enter email address") }}
+                                    {% if form.email.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.email.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.phone.label(class="form-label") }}
+                                    {{ form.phone(class="form-control", placeholder="Enter phone number") }}
+                                    {% if form.phone.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.phone.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.company_name.label(class="form-label") }}
+                            {{ form.company_name(class="form-control", placeholder="Enter company name") }}
+                            {% if form.company_name.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.company_name.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.address.label(class="form-label") }}
+                            {{ form.address(class="form-control", rows="3", placeholder="Enter complete address") }}
+                            {% if form.address.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.address.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.tax_id.label(class="form-label") }}
+                                    {{ form.tax_id(class="form-control", placeholder="Enter tax ID/VAT number") }}
+                                    {% if form.tax_id.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.tax_id.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.credit_limit.label(class="form-label") }}
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        {{ form.credit_limit(class="form-control", placeholder="0.00") }}
+                                    </div>
+                                    {% if form.credit_limit.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.credit_limit.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <small class="form-text text-muted">Leave empty for no credit limit</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.payment_terms.label(class="form-label") }}
+                            {{ form.payment_terms(class="form-control", placeholder="e.g., Net 30, Net 60, etc.") }}
+                            {% if form.payment_terms.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.payment_terms.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted">Standard payment terms for this customer</small>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <i class="mdi mdi-information-outline me-2"></i>
+                            <strong>Note:</strong> 
+                            {% if customer %}
+                                Changes will be saved immediately. You can view the updated customer information on the customer details page.
+                            {% else %}
+                                After creating the customer, you can add quotations, invoices, and track all interactions.
+                            {% endif %}
+                        </div>
+
+                        <div class="text-end">
+                            <a href="{{ url_for('sales.customers') }}" class="btn btn-secondary me-2">Cancel</a>
+                            {{ form.submit(class="btn btn-primary") }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    // Form validation
+    $('form').on('submit', function(e) {
+        var isValid = true;
+        
+        // Check required fields
+        $(this).find('[required]').each(function() {
+            if (!$(this).val()) {
+                isValid = false;
+                $(this).addClass('is-invalid');
+            } else {
+                $(this).removeClass('is-invalid');
+            }
+        });
+        
+        // Validate email format
+        var email = $('#email').val();
+        var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (email && !emailRegex.test(email)) {
+            $('#email').addClass('is-invalid');
+            isValid = false;
+        }
+        
+        // Validate phone format (basic)
+        var phone = $('#phone').val();
+        if (phone) {
+            var phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
+            if (!phoneRegex.test(phone.replace(/[\s\-\(\)]/g, ''))) {
+                $('#phone').addClass('is-invalid');
+                isValid = false;
+            }
+        }
+        
+        if (!isValid) {
+            e.preventDefault();
+            toastr.error('Please fill in all required fields correctly.');
+        }
+    });
+    
+    // Real-time validation
+    $('input, textarea').on('blur', function() {
+        if ($(this).hasClass('is-invalid')) {
+            $(this).removeClass('is-invalid');
+        }
+    });
+    
+    // Phone number formatting
+    $('#phone').on('input', function() {
+        var value = $(this).val().replace(/\D/g, '');
+        if (value.length > 0) {
+            if (value.length <= 3) {
+                value = '(' + value;
+            } else if (value.length <= 6) {
+                value = '(' + value.substring(0, 3) + ') ' + value.substring(3);
+            } else {
+                value = '(' + value.substring(0, 3) + ') ' + value.substring(3, 6) + '-' + value.substring(6, 10);
+            }
+        }
+        $(this).val(value);
+    });
+    
+    // Credit limit formatting
+    $('#credit_limit').on('input', function() {
+        var value = $(this).val().replace(/[^\d.]/g, '');
+        if (value && !isNaN(value)) {
+            $(this).val(parseFloat(value).toFixed(2));
+        }
+    });
+    
+    // Auto-save draft (optional feature)
+    var autoSaveTimer;
+    $('input, textarea').on('input', function() {
+        clearTimeout(autoSaveTimer);
+        autoSaveTimer = setTimeout(function() {
+            // Save form data to localStorage as draft
+            var formData = {};
+            $('form input, form textarea').each(function() {
+                formData[$(this).attr('name')] = $(this).val();
+            });
+            localStorage.setItem('customer_form_draft', JSON.stringify(formData));
+        }, 2000);
+    });
+    
+    // Load draft on page load
+    var draft = localStorage.getItem('customer_form_draft');
+    if (draft && !$('#first_name').val()) {
+        try {
+            var formData = JSON.parse(draft);
+            Object.keys(formData).forEach(function(key) {
+                var field = $('[name="' + key + '"]');
+                if (field.length && !field.val()) {
+                    field.val(formData[key]);
+                }
+            });
+        } catch (e) {
+            console.error('Error loading draft:', e);
+        }
+    }
+    
+    // Clear draft on successful form submission
+    $('form').on('submit', function() {
+        localStorage.removeItem('customer_form_draft');
+    });
+});
+</script>
+{% endblock %}

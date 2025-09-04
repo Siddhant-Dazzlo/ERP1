@@ -1,0 +1,274 @@
+{% extends "base.html" %}
+
+{% block title %}Leads - SaaS ERP{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">Leads</h1>
+            <p class="text-muted">Manage and track your sales leads</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{{ url_for('sales.new_lead') }}" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-2"></i>New Lead
+            </a>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET" action="{{ url_for('sales.leads') }}" class="row g-3">
+                <div class="col-md-3">
+                    <label for="search" class="form-label">Search</label>
+                    <input type="text" class="form-control" id="search" name="search" 
+                           value="{{ request.args.get('search', '') }}" placeholder="Search leads...">
+                </div>
+                <div class="col-md-2">
+                    <label for="status" class="form-label">Status</label>
+                    <select class="form-select" id="status" name="status">
+                        <option value="">All Statuses</option>
+                        <option value="prospect" {{ 'selected' if request.args.get('status') == 'prospect' }}>Prospect</option>
+                        <option value="contacted" {{ 'selected' if request.args.get('status') == 'contacted' }}>Contacted</option>
+                        <option value="qualified" {{ 'selected' if request.args.get('status') == 'qualified' }}>Qualified</option>
+                        <option value="proposal" {{ 'selected' if request.args.get('status') == 'proposal' }}>Proposal</option>
+                        <option value="negotiation" {{ 'selected' if request.args.get('status') == 'negotiation' }}>Negotiation</option>
+                        <option value="closed_won" {{ 'selected' if request.args.get('status') == 'closed_won' }}>Closed Won</option>
+                        <option value="closed_lost" {{ 'selected' if request.args.get('status') == 'closed_lost' }}>Closed Lost</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label for="source" class="form-label">Source</label>
+                    <select class="form-select" id="source" name="source">
+                        <option value="">All Sources</option>
+                        <option value="website" {{ 'selected' if request.args.get('source') == 'website' }}>Website</option>
+                        <option value="referral" {{ 'selected' if request.args.get('source') == 'referral' }}>Referral</option>
+                        <option value="social_media" {{ 'selected' if request.args.get('source') == 'social_media' }}>Social Media</option>
+                        <option value="cold_call" {{ 'selected' if request.args.get('source') == 'cold_call' }}>Cold Call</option>
+                        <option value="email" {{ 'selected' if request.args.get('source') == 'email' }}>Email</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label for="assigned_to" class="form-label">Assigned To</label>
+                    <select class="form-select" id="assigned_to" name="assigned_to">
+                        <option value="">All Users</option>
+                        {% for user in users %}
+                        <option value="{{ user.id }}" {{ 'selected' if request.args.get('assigned_to')|int == user.id }}>{{ user.first_name }} {{ user.last_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary me-2">
+                        <i class="bi bi-search me-2"></i>Filter
+                    </button>
+                    <a href="{{ url_for('sales.leads') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-clockwise me-2"></i>Clear
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Leads Table -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="card-title mb-0">Leads ({{ leads.total }})</h5>
+        </div>
+        <div class="card-body">
+            {% if leads.items %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Company</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Status</th>
+                            <th>Source</th>
+                            <th>Assigned To</th>
+                            <th>Created</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for lead in leads.items %}
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar-sm bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px;">
+                                        {{ lead.first_name[0] }}{{ lead.last_name[0] }}
+                                    </div>
+                                    <div>
+                                        <a href="{{ url_for('sales.view_lead', lead_id=lead.id) }}" class="text-decoration-none fw-medium">
+                                            {{ lead.first_name }} {{ lead.last_name }}
+                                        </a>
+                                        {% if lead.job_title %}
+                                        <br><small class="text-muted">{{ lead.job_title }}</small>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </td>
+                            <td>{{ lead.company_name or '-' }}</td>
+                            <td>
+                                <a href="mailto:{{ lead.email }}" class="text-decoration-none">{{ lead.email }}</a>
+                            </td>
+                            <td>{{ lead.phone or '-' }}</td>
+                            <td>
+                                <span class="badge bg-{{ 
+                                    'success' if lead.status == 'qualified' 
+                                    else 'warning' if lead.status == 'prospect' 
+                                    else 'info' if lead.status == 'contacted'
+                                    else 'primary' if lead.status == 'proposal'
+                                    else 'secondary' if lead.status == 'negotiation'
+                                    else 'success' if lead.status == 'closed_won'
+                                    else 'danger' if lead.status == 'closed_lost'
+                                    else 'secondary'
+                                }}">
+                                    {{ lead.status|title }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge bg-light text-dark">{{ lead.source|title }}</span>
+                            </td>
+                            <td>
+                                {% if lead.assigned_to %}
+                                <span class="badge bg-info">{{ lead.assigned_to.first_name }} {{ lead.assigned_to.last_name }}</span>
+                                {% else %}
+                                <span class="badge bg-secondary">Unassigned</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <small class="text-muted">{{ lead.created_at|date }}</small>
+                            </td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a href="{{ url_for('sales.view_lead', lead_id=lead.id) }}" 
+                                       class="btn btn-sm btn-outline-primary" 
+                                       data-bs-toggle="tooltip" title="View">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a href="{{ url_for('sales.edit_lead', lead_id=lead.id) }}" 
+                                       class="btn btn-sm btn-outline-secondary" 
+                                       data-bs-toggle="tooltip" title="Edit">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <button type="button" 
+                                            class="btn btn-sm btn-outline-success" 
+                                            data-bs-toggle="tooltip" title="Convert to Customer"
+                                            onclick="convertLead({{ lead.id }})">
+                                        <i class="bi bi-person-check"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            {% if leads.pages > 1 %}
+            <nav aria-label="Leads pagination" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if leads.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('sales.leads', page=leads.prev_num, **request.args) }}">Previous</a>
+                    </li>
+                    {% endif %}
+                    
+                    {% for page_num in leads.iter_pages() %}
+                        {% if page_num %}
+                            {% if page_num != leads.page %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('sales.leads', page=page_num, **request.args) }}">{{ page_num }}</a>
+                            </li>
+                            {% else %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ page_num }}</span>
+                            </li>
+                            {% endif %}
+                        {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">...</span>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if leads.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('sales.leads', page=leads.next_num, **request.args) }}">Next</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+            
+            {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-person-lines-fill fs-1 text-muted mb-3"></i>
+                <h5 class="text-muted">No leads found</h5>
+                <p class="text-muted">Get started by adding your first lead</p>
+                <a href="{{ url_for('sales.new_lead') }}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle me-2"></i>Add Your First Lead
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Convert Lead Modal -->
+<div class="modal fade" id="convertLeadModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Convert Lead to Customer</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="convertLeadForm" method="POST">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="company_name" class="form-label">Company Name *</label>
+                        <input type="text" class="form-control" id="company_name" name="company_name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="industry" class="form-label">Industry</label>
+                        <input type="text" class="form-control" id="industry" name="industry">
+                    </div>
+                    <div class="mb-3">
+                        <label for="website" class="form-label">Website</label>
+                        <input type="url" class="form-control" id="website" name="website">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">Convert to Customer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function convertLead(leadId) {
+    const form = document.getElementById('convertLeadForm');
+    form.action = `/sales/leads/${leadId}/convert`;
+    
+    const modal = new bootstrap.Modal(document.getElementById('convertLeadModal'));
+    modal.show();
+}
+
+// HTMX: Update table when filters change
+document.addEventListener('htmx:afterRequest', function(evt) {
+    if (evt.detail.xhr.status === 200) {
+        // Refresh the page to show updated data
+        window.location.reload();
+    }
+});
+</script>
+{% endblock %}

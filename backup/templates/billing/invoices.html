@@ -1,0 +1,368 @@
+{% extends "base.html" %}
+
+{% block title %}Billing Invoices{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="page-title-box">
+                <div class="page-title-right">
+                    <ol class="breadcrumb m-0">
+                        <li class="breadcrumb-item"><a href="{{ url_for('main.dashboard') }}">Dashboard</a></li>
+                        <li class="breadcrumb-item active">Billing Invoices</li>
+                    </ol>
+                </div>
+                <h4 class="page-title">Billing Invoices</h4>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="row">
+        <div class="col-xl-3 col-md-6">
+            <div class="stats-card">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <div class="stats-number">{{ total_invoices }}</div>
+                        <div class="stats-label">Total Invoices</div>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-receipt fs-1"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="stats-card">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <div class="stats-number">{{ paid_invoices }}</div>
+                        <div class="stats-label">Paid Invoices</div>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-check-circle fs-1"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="stats-card">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <div class="stats-number">{{ pending_invoices }}</div>
+                        <div class="stats-label">Pending Invoices</div>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-clock fs-1"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="stats-card">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <div class="stats-number">₹{{ "{:,.2f}".format(total_amount) }}</div>
+                        <div class="stats-label">Total Amount</div>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-currency-rupee fs-1"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters and Search -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Filter & Search</h5>
+                </div>
+                <div class="card-body">
+                    <form method="GET" action="{{ url_for('billing.invoices') }}">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label class="form-label">Status</label>
+                                    <select name="status" class="form-select">
+                                        <option value="">All Status</option>
+                                        <option value="paid" {{ 'selected' if request.args.get('status') == 'paid' }}>Paid</option>
+                                        <option value="pending" {{ 'selected' if request.args.get('status') == 'pending' }}>Pending</option>
+                                        <option value="overdue" {{ 'selected' if request.args.get('status') == 'overdue' }}>Overdue</option>
+                                        <option value="cancelled" {{ 'selected' if request.args.get('status') == 'cancelled' }}>Cancelled</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label class="form-label">Date From</label>
+                                    <input type="date" name="date_from" class="form-control" value="{{ request.args.get('date_from', '') }}">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label class="form-label">Date To</label>
+                                    <input type="date" name="date_to" class="form-control" value="{{ request.args.get('date_to', '') }}">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label class="form-label">&nbsp;</label>
+                                    <div class="d-grid">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="bi bi-search me-1"></i>Filter
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Invoices Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Invoices</h5>
+                    <div>
+                        <button class="btn btn-outline-success me-2" onclick="exportInvoices()">
+                            <i class="bi bi-download me-1"></i>Export
+                        </button>
+                        <a href="{{ url_for('billing.create_invoice') }}" class="btn btn-primary">
+                            <i class="bi bi-plus me-1"></i>Create Invoice
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Invoice #</th>
+                                    <th>Customer</th>
+                                    <th>Date</th>
+                                    <th>Due Date</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for invoice in invoices.items %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex flex-column">
+                                            <strong>{{ invoice.invoice_number }}</strong>
+                                            <small class="text-muted">{{ invoice.type.value.title() }}</small>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-sm me-2">
+                                                {% if invoice.customer.avatar_url %}
+                                                    <img src="{{ invoice.customer.avatar_url }}" class="rounded-circle" alt="Avatar" style="width: 32px; height: 32px;">
+                                                {% else %}
+                                                    <div class="avatar-title rounded-circle bg-primary" style="width: 32px; height: 32px; line-height: 32px;">
+                                                        {{ invoice.customer.name[0] }}
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-0 fs-6">{{ invoice.customer.name }}</h6>
+                                                <small class="text-muted">{{ invoice.customer.email }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex flex-column">
+                                            <span>{{ invoice.invoice_date.strftime('%Y-%m-%d') }}</span>
+                                            <small class="text-muted">{{ invoice.invoice_date.strftime('%H:%M') }}</small>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex flex-column">
+                                            <span class="{{ 'text-danger' if invoice.is_overdue else '' }}">
+                                                {{ invoice.due_date.strftime('%Y-%m-%d') }}
+                                            </span>
+                                            {% if invoice.is_overdue %}
+                                                <small class="text-danger">{{ invoice.days_overdue }} days overdue</small>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex flex-column">
+                                            <strong>₹{{ "{:,.2f}".format(invoice.total_amount) }}</strong>
+                                            {% if invoice.tax_amount > 0 %}
+                                                <small class="text-muted">+₹{{ "{:,.2f}".format(invoice.tax_amount) }} tax</small>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if invoice.status.value == 'paid' else 'warning' if invoice.status.value == 'pending' else 'danger' if invoice.status.value == 'overdue' else 'secondary' }}">
+                                            {{ invoice.status.value.title() }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a href="{{ url_for('billing.invoice_detail', invoice_id=invoice.id) }}" class="btn btn-sm btn-outline-info">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                            <a href="{{ url_for('billing.download_invoice', invoice_id=invoice.id) }}" class="btn btn-sm btn-outline-success">
+                                                <i class="bi bi-download"></i>
+                                            </a>
+                                            {% if invoice.status.value == 'pending' %}
+                                                <button class="btn btn-sm btn-outline-primary" onclick="sendReminder({{ invoice.id }})">
+                                                    <i class="bi bi-envelope"></i>
+                                                </button>
+                                            {% endif %}
+                                            {% if invoice.status.value in ['pending', 'overdue'] %}
+                                                <button class="btn btn-sm btn-outline-warning" onclick="markAsPaid({{ invoice.id }})">
+                                                    <i class="bi bi-check-circle"></i>
+                                                </button>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    {% if invoices.pages > 1 %}
+                    <nav aria-label="Invoices pagination">
+                        <ul class="pagination justify-content-center">
+                            {% if invoices.has_prev %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('billing.invoices', page=invoices.prev_num, **request.args) }}">Previous</a>
+                                </li>
+                            {% endif %}
+                            
+                            {% for page_num in invoices.iter_pages() %}
+                                {% if page_num %}
+                                    {% if page_num != invoices.page %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="{{ url_for('billing.invoices', page=page_num, **request.args) }}">{{ page_num }}</a>
+                                        </li>
+                                    {% else %}
+                                        <li class="page-item active">
+                                            <span class="page-link">{{ page_num }}</span>
+                                        </li>
+                                    {% endif %}
+                                {% else %}
+                                    <li class="page-item disabled">
+                                        <span class="page-link">...</span>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if invoices.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('billing.invoices', page=invoices.next_num, **request.args) }}">Next</a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Recent Billing Activity</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Action</th>
+                                    <th>Invoice</th>
+                                    <th>User</th>
+                                    <th>Date</th>
+                                    <th>Details</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for activity in recent_activity %}
+                                <tr>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if activity.action == 'created' else 'info' if activity.action == 'updated' else 'warning' if activity.action == 'sent' else 'danger' }}">
+                                            {{ activity.action.title() }}
+                                        </span>
+                                    </td>
+                                    <td>{{ activity.invoice.invoice_number }}</td>
+                                    <td>{{ activity.user.get_full_name() if activity.user else 'System' }}</td>
+                                    <td>{{ activity.timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
+                                    <td>{{ activity.details }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function sendReminder(invoiceId) {
+    if (confirm('Send payment reminder to customer?')) {
+        fetch(`/billing/invoices/${invoiceId}/send-reminder`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Payment reminder sent successfully!');
+                location.reload();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        });
+    }
+}
+
+function markAsPaid(invoiceId) {
+    if (confirm('Mark this invoice as paid?')) {
+        fetch(`/billing/invoices/${invoiceId}/mark-paid`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Invoice marked as paid successfully!');
+                location.reload();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        });
+    }
+}
+
+function exportInvoices() {
+    const currentUrl = new URL(window.location);
+    currentUrl.searchParams.set('export', 'true');
+    window.location.href = currentUrl.toString();
+}
+</script>
+{% endblock %}

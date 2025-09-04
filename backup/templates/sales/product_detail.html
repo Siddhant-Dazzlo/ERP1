@@ -1,0 +1,494 @@
+{% extends "base.html" %}
+
+{% block title %}Product Details - {{ product.name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="page-title-box">
+                <div class="page-title-right">
+                    <ol class="breadcrumb m-0">
+                        <li class="breadcrumb-item"><a href="{{ url_for('main.dashboard') }}">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="{{ url_for('sales.products') }}">Products</a></li>
+                        <li class="breadcrumb-item active">Product Details</li>
+                    </ol>
+                </div>
+                <h4 class="page-title">Product Details</h4>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Product Image and Basic Info -->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <div class="product-image mb-3">
+                        {% if product.image_url %}
+                            <img src="{{ product.image_url }}" class="img-fluid rounded" alt="{{ product.name }}" style="max-width: 300px; max-height: 300px;">
+                        {% else %}
+                            <div class="bg-light rounded d-flex align-items-center justify-content-center" style="width: 300px; height: 300px;">
+                                <i class="bi bi-image text-muted" style="font-size: 4rem;"></i>
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <h4 class="mb-2">{{ product.name }}</h4>
+                    <p class="text-muted mb-2">{{ product.category.name if product.category else 'Uncategorized' }}</p>
+                    
+                    <div class="mb-3">
+                        <span class="badge bg-{{ 'success' if product.status.value == 'active' else 'warning' if product.status.value == 'draft' else 'danger' }} fs-6">
+                            {{ product.status.value.title() }}
+                        </span>
+                    </div>
+
+                    <div class="d-flex justify-content-center gap-2">
+                        <a href="{{ url_for('sales.edit_product', product_id=product.id) }}" class="btn btn-primary">
+                            <i class="bi bi-pencil me-1"></i>Edit Product
+                        </a>
+                        <button class="btn btn-outline-success" onclick="duplicateProduct({{ product.id }})">
+                            <i class="bi bi-files me-1"></i>Duplicate
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Product Performance</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <div class="stats-card p-3">
+                                <div class="stats-number">{{ product.total_sales or 0 }}</div>
+                                <div class="stats-label">Total Sales</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="stats-card p-3">
+                                <div class="stats-number">₹{{ "{:,.2f}".format(product.total_revenue or 0) }}</div>
+                                <div class="stats-label">Total Revenue</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row text-center mt-2">
+                        <div class="col-6">
+                            <div class="stats-card p-3">
+                                <div class="stats-number">{{ product.views_count or 0 }}</div>
+                                <div class="stats-label">Views</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="stats-card p-3">
+                                <div class="stats-number">{{ product.conversion_rate or 0 }}%</div>
+                                <div class="stats-label">Conversion</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pricing Information -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Pricing</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="fw-bold">Base Price:</span>
+                        <span class="fs-5 text-primary">₹{{ "{:,.2f}".format(product.base_price) }}</span>
+                    </div>
+                    {% if product.discount_price %}
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-muted">Discount Price:</span>
+                        <span class="fs-6 text-success">₹{{ "{:,.2f}".format(product.discount_price) }}</span>
+                    </div>
+                    {% endif %}
+                    {% if product.tax_rate %}
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-muted">Tax Rate:</span>
+                        <span class="fs-6">{{ product.tax_rate }}%</span>
+                    </div>
+                    {% endif %}
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="fw-bold">Final Price:</span>
+                        <span class="fs-5 fw-bold text-success">₹{{ "{:,.2f}".format(product.final_price) }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Product Details -->
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Product Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Product Name</label>
+                                <p class="form-control-plaintext">{{ product.name }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">SKU</label>
+                                <p class="form-control-plaintext">{{ product.sku or 'Not specified' }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Category</label>
+                                <p class="form-control-plaintext">{{ product.category.name if product.category else 'Uncategorized' }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Brand</label>
+                                <p class="form-control-plaintext">{{ product.brand or 'Not specified' }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Status</label>
+                                <p class="form-control-plaintext">
+                                    <span class="badge bg-{{ 'success' if product.status.value == 'active' else 'warning' if product.status.value == 'draft' else 'danger' }}">
+                                        {{ product.status.value.title() }}
+                                    </span>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Type</label>
+                                <p class="form-control-plaintext">{{ product.type.value.title() if product.type else 'Not specified' }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Description</label>
+                        <p class="form-control-plaintext">{{ product.description or 'No description available' }}</p>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Created Date</label>
+                                <p class="form-control-plaintext">{{ product.created_at.strftime('%B %d, %Y') if product.created_at else 'N/A' }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Last Updated</label>
+                                <p class="form-control-plaintext">{{ product.updated_at.strftime('%B %d, %Y') if product.updated_at else 'N/A' }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Inventory Information -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Inventory & Stock</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Current Stock</label>
+                                <p class="form-control-plaintext">
+                                    <span class="badge bg-{{ 'success' if product.current_stock > product.low_stock_threshold else 'warning' if product.current_stock > 0 else 'danger' }} fs-6">
+                                        {{ product.current_stock or 0 }}
+                                    </span>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Low Stock Threshold</label>
+                                <p class="form-control-plaintext">{{ product.low_stock_threshold or 'Not set' }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Track Inventory</label>
+                                <p class="form-control-plaintext">
+                                    <span class="badge bg-{{ 'success' if product.track_inventory else 'secondary' }}">
+                                        {{ 'Yes' if product.track_inventory else 'No' }}
+                                    </span>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Weight</label>
+                                <p class="form-control-plaintext">{{ product.weight or 'Not specified' }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Dimensions</label>
+                                <p class="form-control-plaintext">
+                                    {% if product.length and product.width and product.height %}
+                                        {{ product.length }} × {{ product.width }} × {{ product.height }} cm
+                                    {% else %}
+                                        Not specified
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Unit</label>
+                                <p class="form-control-plaintext">{{ product.unit or 'Piece' }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SEO Information -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">SEO & Marketing</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Meta Title</label>
+                                <p class="form-control-plaintext">{{ product.meta_title or 'Not set' }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Meta Description</label>
+                                <p class="form-control-plaintext">{{ product.meta_description or 'Not set' }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Keywords</label>
+                        <p class="form-control-plaintext">{{ product.keywords or 'Not specified' }}</p>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Featured</label>
+                                <p class="form-control-plaintext">
+                                    <span class="badge bg-{{ 'success' if product.is_featured else 'secondary' }}">
+                                        {{ 'Yes' if product.is_featured else 'No' }}
+                                    </span>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Sort Order</label>
+                                <p class="form-control-plaintext">{{ product.sort_order or 'Default' }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Product Activity -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Product Activity</h5>
+                    <div>
+                        <button class="btn btn-outline-primary btn-sm" onclick="refreshActivity()">
+                            <i class="bi bi-arrow-clockwise me-1"></i>Refresh
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Activity</th>
+                                    <th>Details</th>
+                                    <th>User</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if product_activities %}
+                                    {% for activity in product_activities %}
+                                    <tr>
+                                        <td>{{ activity.timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
+                                        <td>
+                                            <span class="badge bg-{{ 'primary' if activity.type == 'created' else 'success' if activity.type == 'updated' else 'info' if activity.type == 'viewed' else 'warning' }}">
+                                                {{ activity.type.title() }}
+                                            </span>
+                                        </td>
+                                        <td>{{ activity.details }}</td>
+                                        <td>{{ activity.user.get_full_name() if activity.user else 'System' }}</td>
+                                        <td>
+                                            {% if activity.action_url %}
+                                                <a href="{{ activity.action_url }}" class="btn btn-sm btn-outline-primary">
+                                                    <i class="bi bi-eye me-1"></i>View
+                                                </a>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="5" class="text-center text-muted">No recent activity</td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Related Records -->
+    <div class="row">
+        <!-- Sales History -->
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Recent Sales</h5>
+                    <a href="{{ url_for('sales.new_invoice') }}?product_id={{ product.id }}" class="btn btn-sm btn-primary">
+                        <i class="bi bi-plus me-1"></i>Create Invoice
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if recent_sales %}
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Invoice #</th>
+                                        <th>Customer</th>
+                                        <th>Quantity</th>
+                                        <th>Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for sale in recent_sales %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ sale.invoice_number }}</strong>
+                                        </td>
+                                        <td>{{ sale.customer.name }}</td>
+                                        <td>{{ sale.quantity }}</td>
+                                        <td>₹{{ "{:,.2f}".format(sale.total_amount) }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted py-3">
+                            <i class="bi bi-cart fs-1 mb-3"></i>
+                            <p>No sales recorded for this product</p>
+                            <a href="{{ url_for('sales.new_invoice') }}?product_id={{ product.id }}" class="btn btn-primary">
+                                <i class="bi bi-plus me-1"></i>Create Invoice
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Product Reviews -->
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Customer Reviews</h5>
+                    <span class="badge bg-primary">{{ product.reviews_count or 0 }} reviews</span>
+                </div>
+                <div class="card-body">
+                    {% if product_reviews %}
+                        {% for review in product_reviews %}
+                        <div class="border-bottom pb-3 mb-3">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <strong>{{ review.customer.name }}</strong>
+                                    <div class="text-warning">
+                                        {% for i in range(5) %}
+                                            <i class="bi bi-star{{ '-fill' if i < review.rating else '' }}"></i>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                <small class="text-muted">{{ review.created_at.strftime('%Y-%m-%d') }}</small>
+                            </div>
+                            <p class="mb-0">{{ review.comment }}</p>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center text-muted py-3">
+                            <i class="bi bi-chat-dots fs-1 mb-3"></i>
+                            <p>No reviews yet</p>
+                            <small>Be the first to review this product!</small>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function duplicateProduct(productId) {
+    if (confirm('Create a copy of this product?')) {
+        fetch(`/sales/products/${productId}/duplicate`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Product duplicated successfully!');
+                window.location.href = data.redirect_url;
+            } else {
+                alert('Error: ' + data.message);
+            }
+        });
+    }
+}
+
+function refreshActivity() {
+    location.reload();
+}
+
+// Auto-refresh every 5 minutes
+setInterval(function() {
+    refreshActivity();
+}, 300000);
+</script>
+{% endblock %}

@@ -1,0 +1,254 @@
+{% extends "base.html" %}
+
+{% block title %}{{ 'Edit' if lead else 'New' }} Lead - SaaS ERP{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">{{ 'Edit' if lead else 'New' }} Lead</h1>
+            <p class="text-muted">{{ 'Update lead information' if lead else 'Add a new lead to your pipeline' }}</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{{ url_for('sales.leads') }}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-2"></i>Back to Leads
+            </a>
+        </div>
+    </div>
+
+    <!-- Lead Form -->
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Lead Information</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" class="needs-validation" novalidate>
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="row g-3">
+                            <!-- Personal Information -->
+                            <div class="col-md-6">
+                                <label for="{{ form.first_name.id }}" class="form-label">First Name *</label>
+                                {{ form.first_name(class="form-control", placeholder="Enter first name") }}
+                                {% if form.first_name.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.first_name.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="{{ form.last_name.id }}" class="form-label">Last Name *</label>
+                                {{ form.last_name(class="form-control", placeholder="Enter last name") }}
+                                {% if form.last_name.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.last_name.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="{{ form.email.id }}" class="form-label">Email Address *</label>
+                                {{ form.email(class="form-control", placeholder="Enter email address") }}
+                                {% if form.email.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.email.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="{{ form.phone.id }}" class="form-label">Phone Number</label>
+                                {{ form.phone(class="form-control", placeholder="Enter phone number") }}
+                                {% if form.phone.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.phone.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Company Information -->
+                            <div class="col-md-6">
+                                <label for="{{ form.company_name.id }}" class="form-label">Company Name</label>
+                                {{ form.company_name(class="form-control", placeholder="Enter company name") }}
+                                {% if form.company_name.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.company_name.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="{{ form.job_title.id }}" class="form-label">Job Title</label>
+                                {{ form.job_title(class="form-control", placeholder="Enter job title") }}
+                                {% if form.job_title.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.job_title.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="{{ form.industry.id }}" class="form-label">Industry</label>
+                                {{ form.industry(class="form-control", placeholder="Enter industry") }}
+                                {% if form.industry.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.industry.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="{{ form.source.id }}" class="form-label">Lead Source *</label>
+                                {{ form.source(class="form-select") }}
+                                {% if form.source.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.source.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Sales Information -->
+                            <div class="col-md-6">
+                                <label for="{{ form.estimated_value.id }}" class="form-label">Estimated Value</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    {{ form.estimated_value(class="form-control", placeholder="0.00") }}
+                                </div>
+                                {% if form.estimated_value.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.estimated_value.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="{{ form.next_follow_up.id }}" class="form-label">Next Follow-up</label>
+                                {{ form.next_follow_up(class="form-control", type="datetime-local") }}
+                                {% if form.next_follow_up.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.next_follow_up.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Notes -->
+                            <div class="col-12">
+                                <label for="{{ form.notes.id }}" class="form-label">Notes</label>
+                                {{ form.notes(class="form-control", rows="4", placeholder="Enter any additional notes about this lead...") }}
+                                {% if form.notes.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.notes.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <hr class="my-4">
+                        
+                        <!-- Form Actions -->
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="{{ url_for('sales.leads') }}" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle me-2"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle me-2"></i>{{ 'Update' if lead else 'Create' }} Lead
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.form-control:focus,
+.form-select:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+
+.invalid-feedback {
+    display: block;
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Form validation
+(function() {
+    'use strict';
+    window.addEventListener('load', function() {
+        var forms = document.getElementsByClassName('needs-validation');
+        var validation = Array.prototype.filter.call(forms, function(form) {
+            form.addEventListener('submit', function(event) {
+                if (form.checkValidity() === false) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    }, false);
+})();
+
+// Auto-save draft functionality
+let autoSaveTimer;
+const form = document.querySelector('form');
+const formData = new FormData(form);
+
+form.addEventListener('input', function() {
+    clearTimeout(autoSaveTimer);
+    autoSaveTimer = setTimeout(function() {
+        // Save form data to localStorage
+        const formData = new FormData(form);
+        const data = {};
+        for (let [key, value] of formData.entries()) {
+            data[key] = value;
+        }
+        localStorage.setItem('leadFormDraft', JSON.stringify(data));
+    }, 1000);
+});
+
+// Load draft on page load
+window.addEventListener('load', function() {
+    const draft = localStorage.getItem('leadFormDraft');
+    if (draft) {
+        const data = JSON.parse(draft);
+        for (let key in data) {
+            const field = form.querySelector(`[name="${key}"]`);
+            if (field) {
+                field.value = data[key];
+            }
+        }
+    }
+});
+</script>
+{% endblock %}

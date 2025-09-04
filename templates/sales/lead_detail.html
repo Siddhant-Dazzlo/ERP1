@@ -1,0 +1,458 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="page-title-box">
+                <div class="page-title-right">
+                    <ol class="breadcrumb m-0">
+                        <li class="breadcrumb-item"><a href="{{ url_for('main.dashboard') }}">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="{{ url_for('sales.leads') }}">Leads</a></li>
+                        <li class="breadcrumb-item active">{{ lead.get_full_name() }}</li>
+                    </ol>
+                </div>
+                <h4 class="page-title">Lead Details</h4>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Lead Information -->
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="header-title">Lead Information</h4>
+                    <div class="btn-group" role="group">
+                        <a href="{{ url_for('sales.edit_lead', lead_id=lead.id) }}" class="btn btn-outline-primary">
+                            <i class="mdi mdi-pencil me-1"></i>Edit
+                        </a>
+                        <button class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#convertLeadModal">
+                            <i class="mdi mdi-account-convert me-1"></i>Convert to Customer
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Full Name</label>
+                                <p class="mb-0">{{ lead.get_full_name() }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Email</label>
+                                <p class="mb-0">
+                                    <a href="mailto:{{ lead.email }}">{{ lead.email }}</a>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Phone</label>
+                                <p class="mb-0">
+                                    {% if lead.phone %}
+                                        <a href="tel:{{ lead.phone }}">{{ lead.phone }}</a>
+                                    {% else %}
+                                        <span class="text-muted">Not provided</span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Company</label>
+                                <p class="mb-0">
+                                    {% if lead.company_name %}
+                                        {{ lead.company_name }}
+                                    {% else %}
+                                        <span class="text-muted">Not provided</span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Job Title</label>
+                                <p class="mb-0">
+                                    {% if lead.job_title %}
+                                        {{ lead.job_title }}
+                                    {% else %}
+                                        <span class="text-muted">Not provided</span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Industry</label>
+                                <p class="mb-0">
+                                    {% if lead.industry %}
+                                        {{ lead.industry }}
+                                    {% else %}
+                                        <span class="text-muted">Not provided</span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Source</label>
+                                <p class="mb-0">
+                                    <span class="badge bg-info">{{ lead.source.replace('_', ' ').title() }}</span>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Status</label>
+                                <p class="mb-0">
+                                    <span class="badge bg-{{ 'success' if lead.status.value == 'closed_won' else 'danger' if lead.status.value == 'closed_lost' else 'warning' if lead.status.value == 'qualified' else 'info' }}">
+                                        {{ lead.status.value.replace('_', ' ').title() }}
+                                    </span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Estimated Value</label>
+                                <p class="mb-0">
+                                    {% if lead.estimated_value %}
+                                        ${{ "%.2f"|format(lead.estimated_value) }}
+                                    {% else %}
+                                        <span class="text-muted">Not specified</span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Next Follow Up</label>
+                                <p class="mb-0">
+                                    {% if lead.next_follow_up %}
+                                        {{ lead.next_follow_up.strftime('%Y-%m-%d %H:%M') }}
+                                    {% else %}
+                                        <span class="text-muted">Not scheduled</span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if lead.notes %}
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Notes</label>
+                        <p class="mb-0">{{ lead.notes }}</p>
+                    </div>
+                    {% endif %}
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Assigned To</label>
+                                <p class="mb-0">
+                                    {% if lead.assigned_to %}
+                                        <a href="{{ url_for('admin.view_user', user_id=lead.assigned_to.id) }}">
+                                            {{ lead.assigned_to.get_full_name() }}
+                                        </a>
+                                    {% else %}
+                                        <span class="text-muted">Unassigned</span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Created</label>
+                                <p class="mb-0">{{ lead.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lead Actions & Status -->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="header-title">Quick Actions</h4>
+                </div>
+                <div class="card-body">
+                    <!-- Status Update -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Update Status</label>
+                        <select class="form-select" id="statusSelect">
+                            <option value="prospect" {{ 'selected' if lead.status.value == 'prospect' }}>Prospect</option>
+                            <option value="contacted" {{ 'selected' if lead.status.value == 'contacted' }}>Contacted</option>
+                            <option value="qualified" {{ 'selected' if lead.status.value == 'qualified' }}>Qualified</option>
+                            <option value="proposal" {{ 'selected' if lead.status.value == 'proposal' }}>Proposal</option>
+                            <option value="negotiation" {{ 'selected' if lead.status.value == 'negotiation' }}>Negotiation</option>
+                            <option value="closed_won" {{ 'selected' if lead.status.value == 'closed_won' }}>Closed Won</option>
+                            <option value="closed_lost" {{ 'selected' if lead.status.value == 'closed_lost' }}>Closed Lost</option>
+                        </select>
+                    </div>
+
+                    <!-- Add Activity -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Add Activity</label>
+                        <select class="form-select mb-2" id="activityType">
+                            <option value="call">Call</option>
+                            <option value="email">Email</option>
+                            <option value="meeting">Meeting</option>
+                            <option value="note">Note</option>
+                            <option value="demo">Demo</option>
+                            <option value="proposal">Proposal</option>
+                        </select>
+                        <input type="text" class="form-control mb-2" id="activitySubject" placeholder="Activity subject">
+                        <textarea class="form-control mb-2" id="activityDescription" rows="3" placeholder="Activity description"></textarea>
+                        <button class="btn btn-primary btn-sm w-100" id="addActivity">
+                            <i class="mdi mdi-plus me-1"></i>Add Activity
+                        </button>
+                    </div>
+
+                    <!-- Lead Statistics -->
+                    <div class="border-top pt-3">
+                        <h6 class="text-muted mb-3">Lead Statistics</h6>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Days in Pipeline:</span>
+                            <strong>{{ ((moment().date() - lead.created_at.date()).days) }}</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Activities:</span>
+                            <strong>{{ activities|length }}</strong>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>Last Activity:</span>
+                            <strong>
+                                {% if activities %}
+                                    {{ activities[0].created_at.strftime('%m/%d') }}
+                                {% else %}
+                                    Never
+                                {% endif %}
+                            </strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Activities Timeline -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="header-title">Activity Timeline</h4>
+                </div>
+                <div class="card-body">
+                    {% if activities %}
+                        <div class="timeline">
+                            {% for activity in activities %}
+                            <div class="timeline-item">
+                                <div class="timeline-marker bg-{{ 'primary' if activity.activity_type == 'call' else 'success' if activity.activity_type == 'meeting' else 'info' if activity.activity_type == 'email' else 'secondary' }}">
+                                    <i class="mdi mdi-{{ 'phone' if activity.activity_type == 'call' else 'calendar' if activity.activity_type == 'meeting' else 'email' if activity.activity_type == 'email' else 'note' }}"></i>
+                                </div>
+                                <div class="timeline-content">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h6 class="mb-1">{{ activity.subject }}</h6>
+                                            <p class="text-muted mb-2">{{ activity.description }}</p>
+                                            <small class="text-muted">
+                                                <i class="mdi mdi-account me-1"></i>
+                                                {{ activity.user.get_full_name() }}
+                                            </small>
+                                        </div>
+                                        <small class="text-muted">
+                                            {{ activity.created_at.strftime('%Y-%m-%d %H:%M') }}
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="mdi mdi-timeline-outline text-muted" style="font-size: 3rem;"></i>
+                            <p class="text-muted mt-2">No activities recorded yet.</p>
+                            <p class="text-muted">Start by adding an activity above.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Convert Lead Modal -->
+<div class="modal fade" id="convertLeadModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Convert Lead to Customer</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to convert <strong>{{ lead.get_full_name() }}</strong> to a customer?</p>
+                <p class="text-muted">This action will:</p>
+                <ul class="text-muted">
+                    <li>Create a new customer record</li>
+                    <li>Update the lead status to "Closed Won"</li>
+                    <li>Allow you to create quotations and invoices</li>
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form method="POST" action="{{ url_for('sales.convert_lead', lead_id=lead.id) }}" style="display: inline;">
+                    <button type="submit" class="btn btn-success">Convert to Customer</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    // Status update
+    $('#statusSelect').on('change', function() {
+        var newStatus = $(this).val();
+        
+        $.ajax({
+            url: "{{ url_for('sales.update_lead_status', lead_id=lead.id) }}",
+            method: 'POST',
+            data: { status: newStatus },
+            success: function(response) {
+                if (response.success) {
+                    toastr.success('Lead status updated successfully');
+                    // Update the status badge
+                    var statusBadge = $('.badge').filter(function() {
+                        return $(this).text().toLowerCase().includes('prospect') || 
+                               $(this).text().toLowerCase().includes('contacted') ||
+                               $(this).text().toLowerCase().includes('qualified') ||
+                               $(this).text().toLowerCase().includes('proposal') ||
+                               $(this).text().toLowerCase().includes('negotiation') ||
+                               $(this).text().toLowerCase().includes('closed won') ||
+                               $(this).text().toLowerCase().includes('closed lost');
+                    });
+                    
+                    var badgeClass = 'bg-info';
+                    if (newStatus === 'closed_won') badgeClass = 'bg-success';
+                    else if (newStatus === 'closed_lost') badgeClass = 'bg-danger';
+                    else if (newStatus === 'qualified') badgeClass = 'bg-warning';
+                    
+                    statusBadge.removeClass().addClass('badge ' + badgeClass);
+                    statusBadge.text(newStatus.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()));
+                } else {
+                    toastr.error(response.error || 'Failed to update status');
+                }
+            },
+            error: function() {
+                toastr.error('Failed to update status');
+            }
+        });
+    });
+    
+    // Add activity
+    $('#addActivity').on('click', function() {
+        var activityType = $('#activityType').val();
+        var subject = $('#activitySubject').val();
+        var description = $('#activityDescription').val();
+        
+        if (!subject || !description) {
+            toastr.error('Please fill in all fields');
+            return;
+        }
+        
+        $.ajax({
+            url: "{{ url_for('sales.add_lead_activity', lead_id=lead.id) }}",
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                type: activityType,
+                subject: subject,
+                description: description
+            }),
+            success: function(response) {
+                if (response.success) {
+                    toastr.success('Activity added successfully');
+                    $('#activitySubject').val('');
+                    $('#activityDescription').val('');
+                    // Reload page to show new activity
+                    setTimeout(function() {
+                        location.reload();
+                    }, 1000);
+                } else {
+                    toastr.error('Failed to add activity');
+                }
+            },
+            error: function() {
+                toastr.error('Failed to add activity');
+            }
+        });
+    });
+});
+</script>
+
+<style>
+.timeline {
+    position: relative;
+    padding-left: 30px;
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 30px;
+}
+
+.timeline-marker {
+    position: absolute;
+    left: -35px;
+    top: 0;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.timeline-content {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 5px;
+    border-left: 3px solid #007bff;
+}
+
+.timeline-item:before {
+    content: '';
+    position: absolute;
+    left: -20px;
+    top: 30px;
+    bottom: -30px;
+    width: 2px;
+    background: #dee2e6;
+}
+
+.timeline-item:last-child:before {
+    display: none;
+}
+</style>
+{% endblock %}

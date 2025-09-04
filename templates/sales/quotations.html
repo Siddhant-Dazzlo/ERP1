@@ -1,0 +1,475 @@
+{% extends "base.html" %}
+
+{% block title %}Quotations - SaaS ERP{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">Quotations</h1>
+            <p class="text-muted">Create and manage customer quotations</p>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-outline-primary" onclick="refreshQuotations()">
+                <i class="bi bi-arrow-clockwise me-2"></i>Refresh
+            </button>
+                         <a href="{{ url_for('sales.new_quotation') }}" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-2"></i>New Quotation
+            </a>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title text-white-50">Total Quotations</h6>
+                                                         <h3 class="mb-0">{{ quotations.total }}</h3>
+                        </div>
+                        <i class="bi bi-file-earmark-text fs-1 opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title text-white-50">Converted</h6>
+                                                         <h3 class="mb-0">{{ quotations.items|selectattr('status', 'equalto', 'converted')|list|length }}</h3>
+                        </div>
+                        <i class="bi bi-check-circle fs-1 opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title text-white-50">Pending</h6>
+                                                         <h3 class="mb-0">{{ quotations.items|selectattr('status', 'equalto', 'pending')|list|length }}</h3>
+                        </div>
+                        <i class="bi bi-clock fs-1 opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title text-white-50">Total Value</h6>
+                                                         <h3 class="mb-0">${{ "%.0f"|format(quotations.items|sum(attribute='total_amount') or 0) }}</h3>
+                        </div>
+                        <i class="bi bi-currency-dollar fs-1 opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters and Search -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-3">
+                    <label for="search" class="form-label">Search</label>
+                    <input type="text" class="form-control" id="search" name="search" 
+                           value="{{ request.args.get('search', '') }}" placeholder="Customer, quotation #...">
+                </div>
+                <div class="col-md-2">
+                    <label for="status" class="form-label">Status</label>
+                    <select class="form-select" id="status" name="status">
+                        <option value="">All Status</option>
+                        <option value="draft" {{ 'selected' if request.args.get('status') == 'draft' }}>Draft</option>
+                        <option value="sent" {{ 'selected' if request.args.get('status') == 'sent' }}>Sent</option>
+                        <option value="pending" {{ 'selected' if request.args.get('status') == 'pending' }}>Pending</option>
+                        <option value="accepted" {{ 'selected' if request.args.get('status') == 'accepted' }}>Accepted</option>
+                        <option value="rejected" {{ 'selected' if request.args.get('status') == 'rejected' }}>Rejected</option>
+                        <option value="converted" {{ 'selected' if request.args.get('status') == 'converted' }}>Converted</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label for="customer" class="form-label">Customer</label>
+                    <select class="form-select" id="customer" name="customer">
+                        <option value="">All Customers</option>
+                        {% for customer in customers %}
+                        <option value="{{ customer.id }}" {{ 'selected' if request.args.get('customer')|int == customer.id }}>{{ customer.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label for="date_from" class="form-label">From Date</label>
+                    <input type="date" class="form-control" id="date_from" name="date_from" 
+                           value="{{ request.args.get('date_from', '') }}">
+                </div>
+                <div class="col-md-2">
+                    <label for="date_to" class="form-label">To Date</label>
+                    <input type="date" class="form-control" id="date_to" name="date_to" 
+                           value="{{ request.args.get('date_to', '') }}">
+                </div>
+                <div class="col-md-1 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-search"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Quotations Table -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="card-title mb-0">Quotations</h5>
+        </div>
+        <div class="card-body">
+            {% if quotations %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Quotation #</th>
+                            <th>Customer</th>
+                            <th>Date</th>
+                            <th>Due Date</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for quotation in quotations %}
+                        <tr>
+                            <td>
+                                <strong>{{ quotation.quotation_number }}</strong>
+                                {% if quotation.is_recurring %}
+                                <span class="badge bg-info ms-1">Recurring</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar-sm me-2">
+                                        <div class="avatar-title bg-light rounded-circle">
+                                            {{ quotation.customer.name[0]|upper }}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div class="fw-medium">{{ quotation.customer.name }}</div>
+                                        <small class="text-muted">{{ quotation.customer.email }}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>{{ quotation.created_at|date }}</td>
+                            <td>
+                                <span class="{% if quotation.due_date and quotation.due_date < today %}text-danger{% endif %}">
+                                    {{ quotation.due_date|date if quotation.due_date else 'No due date' }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="fw-medium">${{ "%.2f"|format(quotation.total_amount) }}</div>
+                                {% if quotation.discount_amount > 0 %}
+                                <small class="text-muted">-${{ "%.2f"|format(quotation.discount_amount) }} discount</small>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge bg-{{ 
+                                    'secondary' if quotation.status == 'draft' else
+                                    'primary' if quotation.status == 'sent' else
+                                    'warning' if quotation.status == 'pending' else
+                                    'success' if quotation.status == 'accepted' else
+                                    'danger' if quotation.status == 'rejected' else
+                                    'info' if quotation.status == 'converted' else 'secondary'
+                                }}">
+                                    {{ quotation.status|title }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <button type="button" class="btn btn-sm btn-outline-primary dropdown-toggle" 
+                                            data-bs-toggle="dropdown">
+                                        Actions
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="{{ url_for('sales.view_quotation', quotation_id=quotation.id) }}">
+                                            <i class="bi bi-eye me-2"></i>View
+                                        </a></li>
+                                        <li><a class="dropdown-item" href="{{ url_for('sales.edit_quotation', quotation_id=quotation.id) }}">
+                                            <i class="bi bi-pencil me-2"></i>Edit
+                                        </a></li>
+                                        <li><a class="dropdown-item" href="{{ url_for('sales.download_quotation_pdf', quotation_id=quotation.id) }}">
+                                            <i class="bi bi-download me-2"></i>Download PDF
+                                        </a></li>
+                                        <li><a class="dropdown-item" href="#" onclick="sendQuotation({{ quotation.id }})">
+                                            <i class="bi bi-envelope me-2"></i>Send Email
+                                        </a></li>
+                                        {% if quotation.status == 'accepted' %}
+                                        <li><a class="dropdown-item" href="#" onclick="convertToInvoice({{ quotation.id }})">
+                                            <i class="bi bi-receipt me-2"></i>Convert to Invoice
+                                        </a></li>
+                                        {% endif %}
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item text-danger" href="#" onclick="deleteQuotation({{ quotation.id }})">
+                                            <i class="bi bi-trash me-2"></i>Delete
+                                        </a></li>
+                                    </ul>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            {% if pagination.pages > 1 %}
+            <nav aria-label="Quotations pagination" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if pagination.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('sales.quotations', page=pagination.prev_num, **request.args) }}">
+                            <i class="bi bi-chevron-left"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+                    
+                    {% for page_num in pagination.iter_pages() %}
+                        {% if page_num %}
+                            {% if page_num != pagination.page %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('sales.quotations', page=page_num, **request.args) }}">{{ page_num }}</a>
+                            </li>
+                            {% else %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ page_num }}</span>
+                            </li>
+                            {% endif %}
+                        {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">...</span>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if pagination.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('sales.quotations', page=pagination.next_num, **request.args) }}">
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+            
+            {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-file-earmark-text fs-1 text-muted mb-3"></i>
+                <h5 class="text-muted">No quotations found</h5>
+                <p class="text-muted">Create your first quotation to get started.</p>
+                <a href="{{ url_for('sales.new_quotation') }}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle me-2"></i>Create Quotation
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Send Quotation Modal -->
+<div class="modal fade" id="sendQuotationModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Send Quotation</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="sendQuotationForm">
+                    <div class="mb-3">
+                        <label for="recipient_email" class="form-label">Recipient Email</label>
+                        <input type="email" class="form-control" id="recipient_email" name="recipient_email" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="subject" class="form-label">Subject</label>
+                        <input type="text" class="form-control" id="subject" name="subject" 
+                               value="Quotation from {{ current_user.company.name }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="message" class="form-label">Message</label>
+                        <textarea class="form-control" id="message" name="message" rows="4" 
+                                  placeholder="Add a personal message to your quotation..."></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="send_copy" name="send_copy">
+                            <label class="form-check-label" for="send_copy">
+                                Send a copy to myself
+                            </label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="sendQuotationEmail()">
+                    <i class="bi bi-envelope me-2"></i>Send Quotation
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.avatar-sm {
+    width: 32px;
+    height: 32px;
+}
+
+.avatar-title {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.card.bg-primary, .card.bg-success, .card.bg-warning, .card.bg-info {
+    border: none;
+}
+
+.card.bg-primary .card-title, .card.bg-success .card-title, 
+.card.bg-warning .card-title, .card.bg-info .card-title {
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let currentQuotationId = null;
+
+function sendQuotation(quotationId) {
+    currentQuotationId = quotationId;
+    const modal = new bootstrap.Modal(document.getElementById('sendQuotationModal'));
+    modal.show();
+}
+
+function sendQuotationEmail() {
+    const form = document.getElementById('sendQuotationForm');
+    const formData = new FormData(form);
+    
+    // Add quotation ID
+    formData.append('quotation_id', currentQuotationId);
+    
+    // Send AJAX request
+    fetch('/sales/send-quotation', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification('Quotation sent successfully!', 'success');
+            const modal = bootstrap.Modal.getInstance(document.getElementById('sendQuotationModal'));
+            modal.hide();
+        } else {
+            showNotification(data.message || 'Failed to send quotation', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('An error occurred while sending the quotation', 'error');
+    });
+}
+
+function convertToInvoice(quotationId) {
+    if (confirm('Are you sure you want to convert this quotation to an invoice?')) {
+        fetch(`/sales/convert-quotation/${quotationId}`, {
+            method: 'POST'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification('Quotation converted to invoice successfully!', 'success');
+                setTimeout(() => {
+                    window.location.href = `/sales/invoices/${data.invoice_id}`;
+                }, 1500);
+            } else {
+                showNotification(data.message || 'Failed to convert quotation', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('An error occurred while converting the quotation', 'error');
+        });
+    }
+}
+
+function deleteQuotation(quotationId) {
+    if (confirm('Are you sure you want to delete this quotation? This action cannot be undone.')) {
+        fetch(`/sales/delete-quotation/${quotationId}`, {
+            method: 'DELETE'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification('Quotation deleted successfully!', 'success');
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            } else {
+                showNotification(data.message || 'Failed to delete quotation', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('An error occurred while deleting the quotation', 'error');
+        });
+    }
+}
+
+function refreshQuotations() {
+    window.location.reload();
+}
+
+function showNotification(message, type) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type === 'error' ? 'danger' : type} alert-dismissible fade show position-fixed`;
+    alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.body.appendChild(alertDiv);
+    
+    // Auto-remove after 3 seconds
+    setTimeout(() => {
+        alertDiv.remove();
+    }, 3000);
+}
+
+// Auto-submit form on filter change
+document.addEventListener('DOMContentLoaded', function() {
+    const filterForm = document.querySelector('form[method="GET"]');
+    const filterInputs = filterForm.querySelectorAll('select, input[type="date"]');
+    
+    filterInputs.forEach(input => {
+        input.addEventListener('change', () => {
+            filterForm.submit();
+        });
+    });
+});
+</script>
+{% endblock %}

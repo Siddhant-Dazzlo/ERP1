@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+
+{% block title %}Server Error - SaaS ERP{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-6 col-xl-5">
+            <div class="text-center py-5">
+                <div class="mb-4">
+                    <i class="bi bi-exclamation-octagon text-danger" style="font-size: 8rem;"></i>
+                </div>
+                
+                <h1 class="display-1 text-muted mb-3">500</h1>
+                <h2 class="h3 mb-4">Internal Server Error</h2>
+                <p class="text-muted mb-4">
+                    Something went wrong on our end. Our team has been notified and is working to fix the issue.
+                </p>
+                
+                <div class="d-flex justify-content-center gap-3 mb-4">
+                    <a href="{{ url_for('main.dashboard') }}" class="btn btn-primary">
+                        <i class="bi bi-house me-2"></i>Go to Dashboard
+                    </a>
+                    <button class="btn btn-outline-secondary" onclick="location.reload()">
+                        <i class="bi bi-arrow-clockwise me-2"></i>Try Again
+                    </button>
+                </div>
+                
+                <div class="card border-0 bg-light">
+                    <div class="card-body">
+                        <h6 class="mb-3">What you can do:</h6>
+                        <ul class="list-unstyled text-start">
+                            <li class="mb-2">
+                                <i class="bi bi-check-circle text-success me-2"></i>
+                                Refresh the page
+                            </li>
+                            <li class="mb-2">
+                                <i class="bi bi-check-circle text-success me-2"></i>
+                                Clear your browser cache
+                            </li>
+                            <li class="mb-2">
+                                <i class="bi bi-check-circle text-success me-2"></i>
+                                Try again in a few minutes
+                            </li>
+                            <li class="mb-2">
+                                <i class="bi bi-check-circle text-success me-2"></i>
+                                Contact support if the problem persists
+                            </li>
+                        </ul>
+                        
+                        <hr class="my-3">
+                        
+                        <div class="d-flex justify-content-center">
+                            <a href="mailto:support@saaserp.com" class="btn btn-outline-primary btn-sm">
+                                <i class="bi bi-envelope me-2"></i>Contact Support
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                {% if error_id %}
+                <div class="mt-4">
+                    <small class="text-muted">
+                        Error ID: <code>{{ error_id }}</code>
+                    </small>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.bi-exclamation-octagon {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+.display-1 {
+    font-weight: 300;
+    color: #6c757d !important;
+}
+
+.card ul li {
+    color: #495057;
+}
+
+.card ul li i {
+    font-size: 0.875rem;
+}
+
+code {
+    background-color: #f8f9fa;
+    padding: 0.2rem 0.4rem;
+    border-radius: 0.25rem;
+    font-size: 0.875rem;
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Auto-refresh after 30 seconds
+setTimeout(() => {
+    location.reload();
+}, 30000);
+
+// Show countdown
+let countdown = 30;
+const countdownElement = document.createElement('div');
+countdownElement.className = 'text-muted small mt-3';
+countdownElement.innerHTML = `Auto-refreshing in <span id="countdown">${countdown}</span> seconds...`;
+document.querySelector('.card').after(countdownElement);
+
+const countdownSpan = document.getElementById('countdown');
+setInterval(() => {
+    countdown--;
+    if (countdownSpan) {
+        countdownSpan.textContent = countdown;
+    }
+    if (countdown <= 0) {
+        clearInterval();
+    }
+}, 1000);
+
+// Log error details for debugging
+console.error('500 Internal Server Error');
+console.error('Timestamp:', new Date().toISOString());
+console.error('URL:', window.location.href);
+console.error('User Agent:', navigator.userAgent);
+
+// Send error report to analytics (if available)
+if (typeof gtag !== 'undefined') {
+    gtag('event', 'exception', {
+        'description': '500 Internal Server Error',
+        'fatal': false
+    });
+}
+</script>
+{% endblock %}

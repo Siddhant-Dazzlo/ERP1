@@ -1,0 +1,355 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://js.stripe.com/v3/stripe.css">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header text-center">
+                    <h4 class="header-title">Complete Your Payment</h4>
+                    <p class="text-muted mb-0">Secure payment powered by Stripe</p>
+                </div>
+                <div class="card-body">
+                    <!-- Plan Summary -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card border-primary">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title text-primary">{{ plan_details.name }} Plan</h5>
+                                    <div class="display-6 text-primary mb-2">${{ plan_details.price }}</div>
+                                    <p class="text-muted mb-0">per {{ plan_details.period }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h6 class="card-title">Plan Features</h6>
+                                    <ul class="list-unstyled mb-0">
+                                        {% for feature in plan_details.features %}
+                                        <li class="mb-2">
+                                            <i class="mdi mdi-check text-success me-2"></i>
+                                            {{ feature }}
+                                        </li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Payment Form -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="header-title">Payment Information</h5>
+                                </div>
+                                <div class="card-body">
+                                    <form id="payment-form">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="card-element" class="form-label">Credit or Debit Card</label>
+                                                    <div id="card-element" class="form-control">
+                                                        <!-- Stripe Elements will create input elements here -->
+                                                    </div>
+                                                    <div id="card-errors" class="invalid-feedback d-block" role="alert"></div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="billing-email" class="form-label">Billing Email</label>
+                                                    <input type="email" class="form-control" id="billing-email" 
+                                                           value="{{ current_user.email }}" readonly>
+                                                    <small class="form-text text-muted">Receipt will be sent to this email</small>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="billing-name" class="form-label">Billing Name</label>
+                                                    <input type="text" class="form-control" id="billing-name" 
+                                                           value="{{ current_user.get_full_name() }}" readonly>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="billing-company" class="form-label">Company</label>
+                                                    <input type="text" class="form-control" id="billing-company" 
+                                                           value="{{ current_user.company.name }}" readonly>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="alert alert-info">
+                                            <i class="mdi mdi-information-outline me-2"></i>
+                                            <strong>Secure Payment:</strong> Your payment information is encrypted and secure. 
+                                            We never store your credit card details.
+                                        </div>
+
+                                        <div class="text-center">
+                                            <button type="submit" class="btn btn-primary btn-lg" id="submit-button">
+                                                <i class="mdi mdi-lock me-2"></i>
+                                                Pay ${{ plan_details.price }} Now
+                                            </button>
+                                            <div class="mt-2">
+                                                <small class="text-muted">
+                                                    By clicking "Pay Now", you agree to our 
+                                                    <a href="#" class="text-decoration-none">Terms of Service</a> and 
+                                                    <a href="#" class="text-decoration-none">Privacy Policy</a>
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Payment Methods -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="header-title">Accepted Payment Methods</h5>
+                                </div>
+                                <div class="card-body text-center">
+                                    <div class="row">
+                                        <div class="col-md-3">
+                                            <div class="payment-method">
+                                                <i class="mdi mdi-credit-card text-primary" style="font-size: 2rem;"></i>
+                                                <p class="mb-0 mt-2">Visa</p>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="payment-method">
+                                                <i class="mdi mdi-credit-card text-primary" style="font-size: 2rem;"></i>
+                                                <p class="mb-0 mt-2">Mastercard</p>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="payment-method">
+                                                <i class="mdi mdi-credit-card text-primary" style="font-size: 2rem;"></i>
+                                                <p class="mb-0 mt-2">American Express</p>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="payment-method">
+                                                <i class="mdi mdi-credit-card text-primary" style="font-size: 2rem;"></i>
+                                                <p class="mb-0 mt-2">Discover</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Back to Subscription -->
+            <div class="text-center mt-3">
+                <a href="{{ url_for('billing.subscription') }}" class="btn btn-outline-secondary">
+                    <i class="mdi mdi-arrow-left me-1"></i>Back to Subscription
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Payment Success Modal -->
+<div class="modal fade" id="paymentSuccessModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Payment Successful!</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <i class="mdi mdi-check-circle text-success" style="font-size: 4rem;"></i>
+                <h4 class="mt-3">Thank You!</h4>
+                <p>Your payment has been processed successfully. Your subscription is now active.</p>
+                <div class="alert alert-success">
+                    <strong>Plan:</strong> {{ plan_details.name }}<br>
+                    <strong>Amount:</strong> ${{ plan_details.price }}<br>
+                    <strong>Status:</strong> Active
+                </div>
+            </div>
+            <div class="modal-footer">
+                <a href="{{ url_for('main.dashboard') }}" class="btn btn-primary">Go to Dashboard</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Payment Error Modal -->
+<div class="modal fade" id="paymentErrorModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Payment Failed</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <i class="mdi mdi-alert-circle text-danger" style="font-size: 4rem;"></i>
+                <h4 class="mt-3">Payment Error</h4>
+                <p id="error-message">An error occurred while processing your payment.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="location.reload()">Try Again</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://js.stripe.com/v3/"></script>
+<script>
+// Initialize Stripe
+var stripe = Stripe('{{ stripe_key }}');
+var elements = stripe.elements();
+
+// Create card element
+var card = elements.create('card', {
+    style: {
+        base: {
+            fontSize: '16px',
+            color: '#424770',
+            '::placeholder': {
+                color: '#aab7c4',
+            },
+        },
+        invalid: {
+            color: '#9e2146',
+        },
+    },
+});
+
+// Add card element to the DOM
+card.mount('#card-element');
+
+// Handle form submission
+var form = document.getElementById('payment-form');
+var submitButton = document.getElementById('submit-button');
+
+form.addEventListener('submit', function(event) {
+    event.preventDefault();
+    
+    // Disable submit button to prevent double submission
+    submitButton.disabled = true;
+    submitButton.innerHTML = '<i class="mdi mdi-loading mdi-spin me-2"></i>Processing...';
+    
+    // Create payment method
+    stripe.createPaymentMethod({
+        type: 'card',
+        card: card,
+        billing_details: {
+            name: document.getElementById('billing-name').value,
+            email: document.getElementById('billing-email').value,
+        },
+    }).then(function(result) {
+        if (result.error) {
+            // Handle error
+            var errorElement = document.getElementById('card-errors');
+            errorElement.textContent = result.error.message;
+            submitButton.disabled = false;
+            submitButton.innerHTML = '<i class="mdi mdi-lock me-2"></i>Pay ${{ plan_details.price }} Now';
+        } else {
+            // Send payment method to server
+            fetch('/billing/confirm-stripe-payment', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    payment_method_id: result.paymentMethod.id,
+                    plan: '{{ plan_details.value }}',
+                    amount: {{ plan_details.price * 100 }}, // Convert to cents
+                }),
+            }).then(function(response) {
+                return response.json();
+            }).then(function(result) {
+                if (result.success) {
+                    // Payment successful
+                    $('#paymentSuccessModal').modal('show');
+                } else {
+                    // Payment failed
+                    document.getElementById('error-message').textContent = result.error || 'Payment failed. Please try again.';
+                    $('#paymentErrorModal').modal('show');
+                }
+            }).catch(function(error) {
+                console.error('Error:', error);
+                document.getElementById('error-message').textContent = 'Network error. Please check your connection and try again.';
+                $('#paymentErrorModal').modal('show');
+            }).finally(function() {
+                submitButton.disabled = false;
+                submitButton.innerHTML = '<i class="mdi mdi-lock me-2"></i>Pay ${{ plan_details.price }} Now';
+            });
+        }
+    });
+});
+
+// Handle card element errors
+card.addEventListener('change', function(event) {
+    var displayError = document.getElementById('card-errors');
+    if (event.error) {
+        displayError.textContent = event.error.message;
+    } else {
+        displayError.textContent = '';
+    }
+});
+
+// Handle modal events
+$('#paymentSuccessModal').on('hidden.bs.modal', function () {
+    window.location.href = "{{ url_for('main.dashboard') }}";
+});
+</script>
+
+<style>
+.payment-method {
+    padding: 20px;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.payment-method:hover {
+    border-color: #007bff;
+    box-shadow: 0 0 10px rgba(0, 123, 255, 0.1);
+}
+
+#card-element {
+    min-height: 40px;
+    padding: 10px 12px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    background: white;
+}
+
+#card-element.StripeElement--focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+#card-element.StripeElement--invalid {
+    border-color: #dc3545;
+}
+
+#card-errors {
+    color: #dc3545;
+    font-size: 14px;
+    margin-top: 5px;
+}
+</style>
+{% endblock %}

@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="page-title-box">
+                <div class="page-title-right">
+                    <ol class="breadcrumb m-0">
+                        <li class="breadcrumb-item"><a href="{{ url_for('main.dashboard') }}">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="{{ url_for('admin.users') }}">Users</a></li>
+                        <li class="breadcrumb-item active">New User</li>
+                    </ol>
+                </div>
+                <h4 class="page-title">Create New User</h4>
+            </div>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="header-title">User Information</h4>
+                    <p class="text-muted mb-0">Create a new user account for your company.</p>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('admin.new_user') }}">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.first_name.label(class="form-label") }}
+                                    {{ form.first_name(class="form-control", placeholder="Enter first name") }}
+                                    {% if form.first_name.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.first_name.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.last_name.label(class="form-label") }}
+                                    {{ form.last_name(class="form-control", placeholder="Enter last name") }}
+                                    {% if form.last_name.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.last_name.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.username.label(class="form-label") }}
+                                    {{ form.username(class="form-control", placeholder="Enter username") }}
+                                    {% if form.username.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.username.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <small class="form-text text-muted">Username must be unique and at least 3 characters long.</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.email.label(class="form-label") }}
+                                    {{ form.email(class="form-control", placeholder="Enter email address") }}
+                                    {% if form.email.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.email.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.role.label(class="form-label") }}
+                            {{ form.role(class="form-select") }}
+                            {% if form.role.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.role.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted">
+                                <strong>Sales Executive:</strong> Can manage leads, customers, and sales activities.<br>
+                                <strong>Manager:</strong> Can manage users and view reports.<br>
+                                <strong>Admin:</strong> Full access to all features and settings.
+                            </small>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <i class="mdi mdi-information-outline me-2"></i>
+                            <strong>Note:</strong> An invitation email will be sent to the user with temporary login credentials. 
+                            The user will be required to change their password upon first login.
+                        </div>
+
+                        <div class="text-end">
+                            <a href="{{ url_for('admin.users') }}" class="btn btn-secondary me-2">Cancel</a>
+                            {{ form.submit(class="btn btn-primary") }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    // Form validation
+    $('form').on('submit', function(e) {
+        var isValid = true;
+        
+        // Check required fields
+        $(this).find('[required]').each(function() {
+            if (!$(this).val()) {
+                isValid = false;
+                $(this).addClass('is-invalid');
+            } else {
+                $(this).removeClass('is-invalid');
+            }
+        });
+        
+        // Validate email format
+        var email = $('#email').val();
+        var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (email && !emailRegex.test(email)) {
+            $('#email').addClass('is-invalid');
+            isValid = false;
+        }
+        
+        // Validate username length
+        var username = $('#username').val();
+        if (username && username.length < 3) {
+            $('#username').addClass('is-invalid');
+            isValid = false;
+        }
+        
+        if (!isValid) {
+            e.preventDefault();
+            toastr.error('Please fill in all required fields correctly.');
+        }
+    });
+    
+    // Real-time validation
+    $('input, select').on('blur', function() {
+        if ($(this).hasClass('is-invalid')) {
+            $(this).removeClass('is-invalid');
+        }
+    });
+    
+    // Auto-generate username from email
+    $('#email').on('blur', function() {
+        var email = $(this).val();
+        var username = $('#username');
+        
+        if (email && !username.val()) {
+            var generatedUsername = email.split('@')[0].toLowerCase();
+            // Remove special characters and limit length
+            generatedUsername = generatedUsername.replace(/[^a-z0-9]/g, '').substring(0, 20);
+            username.val(generatedUsername);
+        }
+    });
+    
+    // Username availability check (optional - could be AJAX call)
+    $('#username').on('blur', function() {
+        var username = $(this).val();
+        if (username && username.length >= 3) {
+            // Here you could make an AJAX call to check username availability
+            // For now, just remove any special characters
+            var cleanUsername = username.replace(/[^a-zA-Z0-9_]/g, '');
+            if (cleanUsername !== username) {
+                $(this).val(cleanUsername);
+                toastr.info('Username cleaned to remove special characters.');
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

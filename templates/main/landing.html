@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+
+{% block title %}SaaS ERP - Enterprise Sales Management{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Hero Section -->
+    <div class="row align-items-center min-vh-100" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+        <div class="col-lg-6 text-center text-lg-start text-white">
+            <div class="px-4">
+                <h1 class="display-4 fw-bold mb-4">Transform Your Sales with SaaS ERP</h1>
+                <p class="lead mb-4">Streamline your sales process, manage leads, track customers, and boost revenue with our comprehensive enterprise solution.</p>
+                <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center justify-content-lg-start">
+                    <a href="{{ url_for('main.company_register') }}" class="btn btn-light btn-lg px-4 py-2">
+                        <i class="bi bi-rocket-takeoff me-2"></i>Get Started Free
+                    </a>
+                    <a href="#features" class="btn btn-outline-light btn-lg px-4 py-2">
+                        <i class="bi bi-play-circle me-2"></i>Learn More
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6 text-center">
+            <img src="https://via.placeholder.com/600x400/ffffff20/ffffff?text=SaaS+ERP+Dashboard" 
+                 alt="SaaS ERP Dashboard" class="img-fluid rounded-3 shadow">
+        </div>
+    </div>
+
+    <!-- Features Section -->
+    <div id="features" class="py-5">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="display-5 fw-bold">Powerful Features for Modern Sales Teams</h2>
+                <p class="lead text-muted">Everything you need to manage your sales pipeline and grow your business</p>
+            </div>
+            
+            <div class="row g-4">
+                <div class="col-md-6 col-lg-3">
+                    <div class="card h-100 text-center border-0 shadow-sm">
+                        <div class="card-body p-4">
+                            <div class="bg-primary bg-gradient text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                                <i class="bi bi-person-lines-fill fs-3"></i>
+                            </div>
+                            <h5 class="card-title">Lead Management</h5>
+                            <p class="card-text text-muted">Capture, track, and nurture leads through your entire sales funnel with intelligent automation.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 col-lg-3">
+                    <div class="card h-100 text-center border-0 shadow-sm">
+                        <div class="card-body p-4">
+                            <div class="bg-success bg-gradient text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                                <i class="bi bi-kanban fs-3"></i>
+                            </div>
+                            <h5 class="card-title">Sales Pipeline</h5>
+                            <p class="card-text text-muted">Visualize your sales process with our intuitive Kanban board and track progress in real-time.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 col-lg-3">
+                    <div class="card h-100 text-center border-0 shadow-sm">
+                        <div class="card-body p-4">
+                            <div class="bg-info bg-gradient text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                                <i class="bi bi-receipt fs-3"></i>
+                            </div>
+                            <h5 class="card-title">Quotes & Invoices</h5>
+                            <p class="card-text text-muted">Generate professional quotes and invoices automatically with our integrated system.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 col-lg-3">
+                    <div class="card h-100 text-center border-0 shadow-sm">
+                        <div class="card-body p-4">
+                            <div class="bg-warning bg-gradient text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                                <i class="bi bi-graph-up fs-3"></i>
+                            </div>
+                            <h5 class="card-title">Analytics & Reports</h5>
+                            <p class="card-text text-muted">Get deep insights into your sales performance with comprehensive analytics and reporting.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pricing Section -->
+    <div class="py-5 bg-light">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="display-5 fw-bold">Simple, Transparent Pricing</h2>
+                <p class="lead text-muted">Choose the plan that fits your business needs</p>
+            </div>
+            
+            <div class="row g-4 justify-content-center">
+                <div class="col-lg-4">
+                    <div class="card h-100 border-0 shadow">
+                        <div class="card-body p-4 text-center">
+                            <h5 class="card-title text-primary">Starter</h5>
+                            <div class="my-4">
+                                <span class="display-4 fw-bold">$29</span>
+                                <span class="text-muted">/month</span>
+                            </div>
+                            <ul class="list-unstyled mb-4">
+                                <li class="mb-2"><i class="bi bi-check text-success me-2"></i>Up to 5 users</li>
+                                <li class="mb-2"><i class="bi bi-check text-success me-2"></i>Basic lead management</li>
+                                <li class="mb-2"><i class="bi bi-check text-success me-2"></i>Email support</li>
+                                <li class="mb-2"><i class="bi bi-check text-success me-2"></i>Standard reports</li>
+                            </ul>
+                            <a href="{{ url_for('main.company_register') }}" class="btn btn-outline-primary w-100">Start Free Trial</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4">
+                    <div class="card h-100 border-primary border-2 shadow-lg">
+                        <div class="card-body p-4 text-center">
+                            <span class="badge bg-primary position-absolute top-0 start-50 translate-middle-x">Most Popular</span>
+                            <h5 class="card-title text-primary">Professional</h5>
+                            <div class="my-4">
+                                <span class="display-4 fw-bold">$79</span>
+                                <span class="text-muted">/month</span>
+                            </div>
+                            <ul class="list-unstyled mb-4">
+                                <li class="mb-2"><i class="bi bi-check text-success me-2"></i>Up to 25 users</li>
+                                <li class="mb-2"><i class="bi bi-check text-success me-2"></i>Advanced CRM features</li>
+                                <li class="mb-2"><i class="bi bi-check text-success me-2"></i>Priority support</li>
+                                <li class="mb-2"><i class="bi bi-check text-success me-2"></i>Custom reports</li>
+                                <li class="mb-2"><i class="bi bi-check text-success me-2"></i>API access</li>
+                            </ul>
+                            <a href="{{ url_for('main.company_register') }}" class="btn btn-primary w-100">Start Free Trial</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4">
+                    <div class="card h-100 border-0 shadow">
+                        <div class="card-body p-4 text-center">
+                            <h5 class="card-title text-primary">Enterprise</h5>
+                            <div class="my-4">
+                                <span class="display-4 fw-bold">$199</span>
+                                <span class="text-muted">/month</span>
+                            </div>
+                            <ul class="list-unstyled mb-4">
+                                <li class="mb-2"><i class="bi bi-check text-success me-2"></i>Unlimited users</li>
+                                <li class="mb-2"><i class="bi bi-check text-success me-2"></i>Advanced automation</li>
+                                <li class="mb-2"><i class="bi bi-check text-success me-2"></i>24/7 support</li>
+                                <li class="mb-2"><i class="bi bi-check text-success me-2"></i>Custom integrations</li>
+                                <li class="mb-2"><i class="bi bi-check text-success me-2"></i>Dedicated account manager</li>
+                            </ul>
+                            <a href="{{ url_for('main.company_register') }}" class="btn btn-outline-primary w-100">Contact Sales</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CTA Section -->
+    <div class="py-5" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+        <div class="container text-center text-white">
+            <h2 class="display-5 fw-bold mb-4">Ready to Transform Your Sales?</h2>
+            <p class="lead mb-4">Join thousands of businesses that have already improved their sales process with SaaS ERP</p>
+            <a href="{{ url_for('main.company_register') }}" class="btn btn-light btn-lg px-5 py-3">
+                <i class="bi bi-rocket-takeoff me-2"></i>Start Your Free Trial Today
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,249 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - SaaS ERP{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">Dashboard</h1>
+            <p class="text-muted">Welcome back, {{ current_user.first_name }}! Here's what's happening with your sales.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-outline-primary" onclick="window.location.reload()">
+                <i class="bi bi-arrow-clockwise me-2"></i>Refresh
+            </button>
+            <button class="btn btn-primary" onclick="window.location.href='{{ url_for('sales.new_lead') }}'">
+                <i class="bi bi-plus-circle me-2"></i>New Lead
+            </button>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-xl-3 col-md-6">
+            <div class="stats-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="stats-number">{{ dashboard_data.total_leads }}</div>
+                        <div class="stats-label">Total Leads</div>
+                    </div>
+                    <div class="fs-1 opacity-75">
+                        <i class="bi bi-person-lines-fill"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6">
+            <div class="stats-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="stats-number">{{ dashboard_data.total_customers }}</div>
+                        <div class="stats-label">Total Customers</div>
+                    </div>
+                    <div class="fs-1 opacity-75">
+                        <i class="bi bi-people-fill"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6">
+            <div class="stats-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="stats-number">{{ dashboard_data.total_revenue|currency }}</div>
+                        <div class="stats-label">Total Revenue</div>
+                    </div>
+                    <div class="fs-1 opacity-75">
+                        <i class="bi bi-currency-dollar"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6">
+            <div class="stats-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="stats-number">{{ dashboard_data.conversion_rate }}%</div>
+                        <div class="stats-label">Conversion Rate</div>
+                    </div>
+                    <div class="fs-1 opacity-75">
+                        <i class="bi bi-graph-up"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row g-4 mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <a href="{{ url_for('sales.new_lead') }}" class="btn btn-outline-primary w-100 h-100 d-flex flex-column align-items-center justify-content-center py-4">
+                                <i class="bi bi-person-plus fs-1 mb-2"></i>
+                                <span>Add New Lead</span>
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{{ url_for('sales.new_customer') }}" class="btn btn-outline-success w-100 h-100 d-flex flex-column align-items-center justify-content-center py-4">
+                                <i class="bi bi-people-plus fs-1 mb-2"></i>
+                                <span>Add Customer</span>
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{{ url_for('sales.new_quotation') }}" class="btn btn-outline-info w-100 h-100 d-flex flex-column align-items-center justify-content-center py-4">
+                                <i class="bi bi-file-earmark-plus fs-1 mb-2"></i>
+                                <span>Create Quote</span>
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{{ url_for('sales.new_invoice') }}" class="btn btn-outline-warning w-100 h-100 d-flex flex-column align-items-center justify-content-center py-4">
+                                <i class="bi bi-receipt-cutoff fs-1 mb-2"></i>
+                                <span>Create Invoice</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity and Pipeline -->
+    <div class="row g-4">
+        <!-- Recent Leads -->
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Recent Leads</h5>
+                    <a href="{{ url_for('sales.leads') }}" class="btn btn-sm btn-outline-primary">View All</a>
+                </div>
+                <div class="card-body">
+                    {% if dashboard_data.recent_leads %}
+                        <div class="list-group list-group-flush">
+                            {% for lead in dashboard_data.recent_leads %}
+                            <div class="list-group-item px-0">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h6 class="mb-1">{{ lead.first_name }} {{ lead.last_name }}</h6>
+                                        <p class="mb-1 text-muted">{{ lead.company_name }}</p>
+                                        <small class="text-muted">{{ lead.email }}</small>
+                                    </div>
+                                    <div class="text-end">
+                                        <span class="badge bg-{{ 'success' if lead.status == 'qualified' else 'warning' if lead.status == 'prospect' else 'info' }}">
+                                            {{ lead.status|title }}
+                                        </span>
+                                        <br>
+                                        <small class="text-muted">{{ lead.created_at|date }}</small>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center py-3">No recent leads found.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Sales Pipeline -->
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Sales Pipeline</h5>
+                    <a href="{{ url_for('sales.sales_pipeline') }}" class="btn btn-sm btn-outline-primary">View Pipeline</a>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <div class="text-center p-3 bg-light rounded">
+                                <div class="h4 mb-1 text-primary">{{ dashboard_data.pipeline_stats.prospect }}</div>
+                                <small class="text-muted">Prospects</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-center p-3 bg-light rounded">
+                                <div class="h4 mb-1 text-info">{{ dashboard_data.pipeline_stats.qualified }}</div>
+                                <small class="text-muted">Qualified</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-center p-3 bg-light rounded">
+                                <div class="h4 mb-1 text-warning">{{ dashboard_data.pipeline_stats.proposal }}</div>
+                                <small class="text-muted">Proposals</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-center p-3 bg-light rounded">
+                                <div class="h4 mb-1 text-success">{{ dashboard_data.pipeline_stats.closed_won }}</div>
+                                <small class="text-muted">Closed Won</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activities -->
+    <div class="row g-4 mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Recent Activities</h5>
+                </div>
+                <div class="card-body">
+                    {% if dashboard_data.recent_activities %}
+                        <div class="timeline">
+                            {% for activity in dashboard_data.recent_activities %}
+                            <div class="timeline-item d-flex mb-3">
+                                <div class="timeline-marker bg-primary rounded-circle me-3" style="width: 12px; height: 12px; margin-top: 6px;"></div>
+                                <div class="timeline-content">
+                                    <div class="d-flex justify-content-between">
+                                        <h6 class="mb-1">{{ activity.subject }}</h6>
+                                        <small class="text-muted">{{ activity.created_at|date }}</small>
+                                    </div>
+                                    <p class="mb-1 text-muted">{{ activity.description }}</p>
+                                    <small class="text-muted">
+                                        <i class="bi bi-person me-1"></i>{{ activity.user.first_name }} {{ activity.user.last_name }}
+                                        {% if activity.lead %}
+                                        • <i class="bi bi-person-lines-fill me-1"></i>{{ activity.lead.first_name }} {{ activity.lead.last_name }}
+                                        {% endif %}
+                                    </small>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center py-3">No recent activities found.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.timeline-item {
+    position: relative;
+}
+
+.timeline-marker {
+    flex-shrink: 0;
+}
+
+.timeline-content {
+    flex: 1;
+}
+</style>
+{% endblock %}

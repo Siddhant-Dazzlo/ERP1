@@ -1,0 +1,402 @@
+{% extends "base.html" %}
+
+{% block title %}Billing & Subscription - SaaS ERP{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">Billing & Subscription</h1>
+            <p class="text-muted">Manage your subscription and billing preferences</p>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-outline-primary" onclick="refreshBilling()">
+                <i class="bi bi-arrow-clockwise me-2"></i>Refresh
+            </button>
+        </div>
+    </div>
+
+    <!-- Current Plan -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Current Plan</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h4 class="mb-2">{{ current_user.company.plan_type|title }} Plan</h4>
+                            <p class="text-muted mb-3">
+                                {% if current_user.company.plan_type == 'starter' %}
+                                    Perfect for small teams getting started
+                                {% elif current_user.company.plan_type == 'pro' %}
+                                    Ideal for growing businesses
+                                {% elif current_user.company.plan_type == 'enterprise' %}
+                                    For large organizations with advanced needs
+                                {% endif %}
+                            </p>
+                            
+                            <div class="row g-3 mb-3">
+                                <div class="col-6">
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-people text-primary me-2"></i>
+                                        <div>
+                                            <div class="h6 mb-0">{{ current_user.company.users|length }}/{{ current_user.company.max_users }}</div>
+                                            <small class="text-muted">Users</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-hdd text-primary me-2"></i>
+                                        <div>
+                                            <div class="h6 mb-0">{{ "%.1f"|format(current_user.company.storage_used_gb) }}/{{ current_user.company.max_storage_gb }} GB</div>
+                                            <small class="text-muted">Storage</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            {% if current_user.company.subscription %}
+                            <div class="alert alert-info">
+                                <i class="bi bi-info-circle me-2"></i>
+                                <strong>Next billing date:</strong> {{ current_user.company.subscription.next_billing_date|date }}
+                                {% if current_user.company.subscription.trial_ends_at %}
+                                <br><strong>Trial ends:</strong> {{ current_user.company.subscription.trial_ends_at|date }}
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <div class="plan-price mb-3">
+                                {% if current_user.company.plan_type == 'starter' %}
+                                    <div class="h2 text-primary mb-0">$29</div>
+                                    <small class="text-muted">per month</small>
+                                {% elif current_user.company.plan_type == 'pro' %}
+                                    <div class="h2 text-primary mb-0">$79</div>
+                                    <small class="text-muted">per month</small>
+                                {% elif current_user.company.plan_type == 'enterprise' %}
+                                    <div class="h2 text-primary mb-0">$199</div>
+                                    <small class="text-muted">per month</small>
+                                {% endif %}
+                            </div>
+                            <button class="btn btn-outline-primary" onclick="showUpgradeModal()">
+                                <i class="bi bi-arrow-up-circle me-2"></i>Upgrade Plan
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Usage Summary</h5>
+                </div>
+                <div class="card-body">
+                    <div class="usage-item mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span>Users</span>
+                            <span class="text-primary">{{ current_user.company.users|length }}/{{ current_user.company.max_users }}</span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar" role="progressbar" 
+                                 style="width: {{ (current_user.company.users|length / current_user.company.max_users * 100)|round }}%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="usage-item mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span>Storage</span>
+                            <span class="text-primary">{{ "%.1f"|format(current_user.company.storage_used_gb) }}/{{ current_user.company.max_storage_gb }} GB</span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar" role="progressbar" 
+                                 style="width: {{ (current_user.company.storage_used_gb / current_user.company.max_storage_gb * 100)|round }}%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="usage-item">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span>API Calls</span>
+                            <span class="text-primary">{{ current_user.company.api_calls_used or 0 }}/{{ current_user.company.max_api_calls or 'Unlimited' }}</span>
+                        </div>
+                        {% if current_user.company.max_api_calls %}
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar" role="progressbar" 
+                                 style="width: {{ (current_user.company.api_calls_used or 0 / current_user.company.max_api_calls * 100)|round }}%"></div>
+                        </div>
+                        {% else %}
+                        <div class="text-muted small">Unlimited</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Plan Comparison -->
+    <div class="row g-4 mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Plan Comparison</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Feature</th>
+                                    <th class="text-center">Starter</th>
+                                    <th class="text-center">Pro</th>
+                                    <th class="text-center">Enterprise</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Users</td>
+                                    <td class="text-center">Up to 5</td>
+                                    <td class="text-center">Up to 25</td>
+                                    <td class="text-center">Unlimited</td>
+                                </tr>
+                                <tr>
+                                    <td>Storage</td>
+                                    <td class="text-center">10 GB</td>
+                                    <td class="text-center">100 GB</td>
+                                    <td class="text-center">1 TB</td>
+                                </tr>
+                                <tr>
+                                    <td>API Calls</td>
+                                    <td class="text-center">1,000/month</td>
+                                    <td class="text-center">10,000/month</td>
+                                    <td class="text-center">Unlimited</td>
+                                </tr>
+                                <tr>
+                                    <td>Support</td>
+                                    <td class="text-center">Email</td>
+                                    <td class="text-center">Priority</td>
+                                    <td class="text-center">24/7</td>
+                                </tr>
+                                <tr>
+                                    <td>Advanced Analytics</td>
+                                    <td class="text-center"><i class="bi bi-x text-muted"></i></td>
+                                    <td class="text-center"><i class="bi bi-check text-success"></i></td>
+                                    <td class="text-center"><i class="bi bi-check text-success"></i></td>
+                                </tr>
+                                <tr>
+                                    <td>Custom Integrations</td>
+                                    <td class="text-center"><i class="bi bi-x text-muted"></i></td>
+                                    <td class="text-center"><i class="bi bi-x text-muted"></i></td>
+                                    <td class="text-center"><i class="bi bi-check text-success"></i></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Billing History -->
+    <div class="row g-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Billing History</h5>
+                </div>
+                <div class="card-body">
+                    {% if billing_history %}
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Description</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>Invoice</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for invoice in billing_history %}
+                                <tr>
+                                    <td>{{ invoice.created_at|date }}</td>
+                                    <td>{{ invoice.description or 'Subscription Renewal' }}</td>
+                                    <td>${{ "%.2f"|format(invoice.amount) }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if invoice.status == 'paid' else 'warning' if invoice.status == 'pending' else 'danger' }}">
+                                            {{ invoice.status|title }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if invoice.invoice_url %}
+                                        <a href="{{ invoice.invoice_url }}" class="btn btn-sm btn-outline-primary" target="_blank">
+                                            <i class="bi bi-download me-1"></i>Download
+                                        </a>
+                                        {% else %}
+                                        <span class="text-muted">N/A</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="bi bi-receipt fs-1 text-muted mb-3"></i>
+                        <h6 class="text-muted">No billing history found</h6>
+                        <p class="text-muted">Your billing history will appear here once you have transactions.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Upgrade Plan Modal -->
+<div class="modal fade" id="upgradePlanModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Upgrade Your Plan</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <div class="card h-100 text-center">
+                            <div class="card-body">
+                                <h5 class="card-title">Starter</h5>
+                                <div class="my-3">
+                                    <span class="h3 fw-bold">$29</span>
+                                    <span class="text-muted">/month</span>
+                                </div>
+                                <ul class="list-unstyled text-start">
+                                    <li class="mb-2"><i class="bi bi-check text-success me-2"></i>Up to 5 users</li>
+                                    <li class="mb-2"><i class="bi bi-check text-success me-2"></i>10 GB storage</li>
+                                    <li class="mb-2"><i class="bi bi-check text-success me-2"></i>Basic features</li>
+                                </ul>
+                                <button class="btn btn-outline-primary w-100" onclick="upgradePlan('starter')">
+                                    Select Starter
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="card h-100 text-center border-primary">
+                            <div class="card-body">
+                                <span class="badge bg-primary position-absolute top-0 start-50 translate-middle-x">Most Popular</span>
+                                <h5 class="card-title">Pro</h5>
+                                <div class="my-3">
+                                    <span class="h3 fw-bold">$79</span>
+                                    <span class="text-muted">/month</span>
+                                </div>
+                                <ul class="list-unstyled text-start">
+                                    <li class="mb-2"><i class="bi bi-check text-success me-2"></i>Up to 25 users</li>
+                                    <li class="mb-2"><i class="bi bi-check text-success me-2"></i>100 GB storage</li>
+                                    <li class="mb-2"><i class="bi bi-check text-success me-2"></i>Advanced features</li>
+                                    <li class="mb-2"><i class="bi bi-check text-success me-2"></i>Priority support</li>
+                                </ul>
+                                <button class="btn btn-primary w-100" onclick="upgradePlan('pro')">
+                                    Select Pro
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="card h-100 text-center">
+                            <div class="card-body">
+                                <h5 class="card-title">Enterprise</h5>
+                                <div class="my-3">
+                                    <span class="h3 fw-bold">$199</span>
+                                    <span class="text-muted">/month</span>
+                                </div>
+                                <ul class="list-unstyled text-start">
+                                    <li class="mb-2"><i class="bi bi-check text-success me-2"></i>Unlimited users</li>
+                                    <li class="mb-2"><i class="bi bi-check text-success me-2"></i>1 TB storage</li>
+                                    <li class="mb-2"><i class="bi bi-check text-success me-2"></i>All features</li>
+                                    <li class="mb-2"><i class="bi bi-check text-success me-2"></i>24/7 support</li>
+                                    <li class="mb-2"><i class="bi bi-check text-success me-2"></i>Custom integrations</li>
+                                </ul>
+                                <button class="btn btn-outline-primary w-100" onclick="upgradePlan('enterprise')">
+                                    Select Enterprise
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.plan-price {
+    padding: 1rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 10px;
+}
+
+.usage-item .progress {
+    background-color: #e9ecef;
+}
+
+.usage-item .progress-bar {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.card.border-primary {
+    border-width: 2px !important;
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function showUpgradeModal() {
+    const modal = new bootstrap.Modal(document.getElementById('upgradePlanModal'));
+    modal.show();
+}
+
+function upgradePlan(planType) {
+    if (confirm(`Are you sure you want to upgrade to the ${planType} plan?`)) {
+        // Here you would typically redirect to a payment page or show payment form
+        // For now, we'll just show a success message
+        showNotification(`Plan upgrade to ${planType} initiated!`, 'success');
+        
+        // Close the modal
+        const modal = bootstrap.Modal.getInstance(document.getElementById('upgradePlanModal'));
+        modal.hide();
+    }
+}
+
+function refreshBilling() {
+    window.location.reload();
+}
+
+function showNotification(message, type) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type === 'error' ? 'danger' : type} alert-dismissible fade show`;
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.querySelector('.container-fluid').insertBefore(alertDiv, document.querySelector('.row'));
+    
+    // Auto-remove after 3 seconds
+    setTimeout(() => {
+        alertDiv.remove();
+    }, 3000);
+}
+</script>
+{% endblock %}

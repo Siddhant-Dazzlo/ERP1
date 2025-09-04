@@ -1,0 +1,478 @@
+{% extends "base.html" %}
+
+{% block title %}System Status{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="page-title-box">
+                <div class="page-title-right">
+                    <ol class="breadcrumb m-0">
+                        <li class="breadcrumb-item"><a href="{{ url_for('main.dashboard') }}">Dashboard</a></li>
+                        <li class="breadcrumb-item active">System Status</li>
+                    </ol>
+                </div>
+                <h4 class="page-title">System Status</h4>
+            </div>
+        </div>
+    </div>
+
+    <!-- System Health Overview -->
+    <div class="row">
+        <div class="col-xl-3 col-md-6">
+            <div class="stats-card {{ 'bg-success' if system_status.overall_status == 'healthy' else 'bg-warning' if system_status.overall_status == 'warning' else 'bg-danger' }}">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <div class="stats-number">{{ system_status.overall_status.title() }}</div>
+                        <div class="stats-label">System Health</div>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-{{ 'check-circle' if system_status.overall_status == 'healthy' else 'exclamation-triangle' if system_status.overall_status == 'warning' else 'x-circle' }} fs-1"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="stats-card">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <div class="stats-number">{{ system_status.uptime }}</div>
+                        <div class="stats-label">Uptime</div>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-clock-history fs-1"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="stats-card">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <div class="stats-number">{{ system_status.active_users }}</div>
+                        <div class="stats-label">Active Users</div>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-people fs-1"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="stats-card">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <div class="stats-number">{{ system_status.response_time }}ms</div>
+                        <div class="stats-label">Avg Response</div>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-speedometer2 fs-1"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- System Components Status -->
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">System Components Status</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Component</th>
+                                    <th>Status</th>
+                                    <th>Version</th>
+                                    <th>Last Check</th>
+                                    <th>Response Time</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for component in system_status.components %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="me-3">
+                                                <i class="bi bi-{{ component.icon }} fs-4"></i>
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-0">{{ component.name }}</h6>
+                                                <small class="text-muted">{{ component.description }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if component.status == 'operational' else 'warning' if component.status == 'degraded' else 'danger' }}">
+                                            {{ component.status.title() }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <code>{{ component.version }}</code>
+                                    </td>
+                                    <td>{{ component.last_check.strftime('%H:%M:%S') }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if component.response_time < 100 else 'warning' if component.response_time < 500 else 'danger' }}">
+                                            {{ component.response_time }}ms
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-info" onclick="checkComponent('{{ component.name }}')">
+                                            <i class="bi bi-arrow-clockwise"></i>
+                                        </button>
+                                        {% if component.status != 'operational' %}
+                                            <button class="btn btn-sm btn-outline-warning" onclick="restartComponent('{{ component.name }}')">
+                                                <i class="bi bi-arrow-repeat"></i>
+                                            </button>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-outline-primary" onclick="refreshAllComponents()">
+                            <i class="bi bi-arrow-clockwise me-1"></i>Refresh All Components
+                        </button>
+                        <button class="btn btn-outline-success" onclick="runSystemDiagnostics()">
+                            <i class="bi bi-clipboard-pulse me-1"></i>Run Diagnostics
+                        </button>
+                        <button class="btn btn-outline-warning" onclick="clearSystemCache()">
+                            <i class="bi bi-trash me-1"></i>Clear System Cache
+                        </button>
+                        <button class="btn btn-outline-info" onclick="generateSystemReport()">
+                            <i class="bi bi-file-earmark-text me-1"></i>Generate Report
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- System Alerts -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Recent Alerts</h5>
+                </div>
+                <div class="card-body">
+                    {% if system_status.alerts %}
+                        {% for alert in system_status.alerts %}
+                        <div class="alert alert-{{ 'danger' if alert.severity == 'critical' else 'warning' if alert.severity == 'high' else 'info' }} alert-dismissible fade show" role="alert">
+                            <div class="d-flex">
+                                <i class="bi bi-{{ 'exclamation-triangle' if alert.severity == 'critical' else 'exclamation-circle' if alert.severity == 'high' else 'info-circle' }} me-2"></i>
+                                <div>
+                                    <strong>{{ alert.title }}</strong>
+                                    <p class="mb-0 small">{{ alert.message }}</p>
+                                    <small class="text-muted">{{ alert.timestamp.strftime('%H:%M:%S') }}</small>
+                                </div>
+                            </div>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center text-muted py-3">
+                            <i class="bi bi-check-circle fs-1 text-success"></i>
+                            <p class="mb-0">No active alerts</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Performance Metrics -->
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">CPU & Memory Usage</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="resourceChart" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Database Performance -->
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Database Performance</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <div class="mb-3">
+                                <h4 class="text-primary">{{ system_status.db_connections }}</h4>
+                                <small class="text-muted">Active Connections</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="mb-3">
+                                <h4 class="text-success">{{ system_status.db_queries_per_sec }}</h4>
+                                <small class="text-muted">Queries/Second</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="mb-3">
+                                <h4 class="text-info">{{ system_status.db_size }}</h4>
+                                <small class="text-muted">Database Size</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="mb-3">
+                                <h4 class="text-warning">{{ system_status.db_uptime }}</h4>
+                                <small class="text-muted">DB Uptime</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- System Logs -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Recent System Logs</h5>
+                    <div>
+                        <button class="btn btn-outline-secondary btn-sm" onclick="refreshLogs()">
+                            <i class="bi bi-arrow-clockwise me-1"></i>Refresh
+                        </button>
+                        <button class="btn btn-outline-danger btn-sm" onclick="clearLogs()">
+                            <i class="bi bi-trash me-1"></i>Clear Logs
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Timestamp</th>
+                                    <th>Level</th>
+                                    <th>Component</th>
+                                    <th>Message</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for log in system_status.recent_logs %}
+                                <tr class="{{ 'table-danger' if log.level == 'ERROR' else 'table-warning' if log.level == 'WARNING' else 'table-info' if log.level == 'INFO' else '' }}">
+                                    <td>{{ log.timestamp.strftime('%H:%M:%S') }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ 'danger' if log.level == 'ERROR' else 'warning' if log.level == 'WARNING' else 'info' if log.level == 'INFO' else 'secondary' }}">
+                                            {{ log.level }}
+                                        </span>
+                                    </td>
+                                    <td>{{ log.component }}</td>
+                                    <td>
+                                        <div class="text-truncate" style="max-width: 300px;" title="{{ log.message }}">
+                                            {{ log.message }}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+// Resource Usage Chart
+const resourceCtx = document.getElementById('resourceChart').getContext('2d');
+const resourceChart = new Chart(resourceCtx, {
+    type: 'line',
+    data: {
+        labels: {{ resource_chart_labels | tojson }},
+        datasets: [{
+            label: 'CPU Usage (%)',
+            data: {{ cpu_usage_data | tojson }},
+            borderColor: '#dc3545',
+            backgroundColor: 'rgba(220, 53, 69, 0.1)',
+            tension: 0.4,
+            fill: true
+        }, {
+            label: 'Memory Usage (%)',
+            data: {{ memory_usage_data | tojson }},
+            borderColor: '#17a2b8',
+            backgroundColor: 'rgba(23, 162, 184, 0.1)',
+            tension: 0.4,
+            fill: true
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'top'
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                max: 100,
+                ticks: {
+                    callback: function(value) {
+                        return value + '%';
+                    }
+                }
+            }
+        }
+    }
+});
+
+function checkComponent(componentName) {
+    fetch(`/admin/system-status/check-component/${componentName}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Error: ' + data.message);
+        }
+    });
+}
+
+function restartComponent(componentName) {
+    if (confirm(`Are you sure you want to restart ${componentName}?`)) {
+        fetch(`/admin/system-status/restart-component/${componentName}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Component restart initiated successfully!');
+                location.reload();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        });
+    }
+}
+
+function refreshAllComponents() {
+    fetch('/admin/system-status/refresh-all', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Error: ' + data.message);
+        }
+    });
+}
+
+function runSystemDiagnostics() {
+    if (confirm('Run comprehensive system diagnostics? This may take a few minutes.')) {
+        fetch('/admin/system-status/run-diagnostics', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Diagnostics started successfully! Check the results in a few minutes.');
+            } else {
+                alert('Error: ' + data.message);
+            }
+        });
+    }
+}
+
+function clearSystemCache() {
+    if (confirm('Clear system cache? This will temporarily impact performance.')) {
+        fetch('/admin/system-status/clear-cache', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('System cache cleared successfully!');
+                location.reload();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        });
+    }
+}
+
+function generateSystemReport() {
+    if (confirm('Generate comprehensive system status report?')) {
+        window.location.href = "{{ url_for('admin.generate_system_report') }}";
+    }
+}
+
+function refreshLogs() {
+    location.reload();
+}
+
+function clearLogs() {
+    if (confirm('Clear all system logs? This action cannot be undone.')) {
+        fetch('/admin/system-status/clear-logs', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('System logs cleared successfully!');
+                location.reload();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        });
+    }
+}
+
+// Auto-refresh every 30 seconds
+setInterval(function() {
+    location.reload();
+}, 30000);
+</script>
+{% endblock %}

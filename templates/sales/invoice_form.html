@@ -1,0 +1,645 @@
+{% extends "base.html" %}
+
+{% block title %}{{ 'Edit Invoice' if invoice else 'New Invoice' }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="page-title-box">
+                <div class="page-title-right">
+                    <ol class="breadcrumb m-0">
+                        <li class="breadcrumb-item"><a href="{{ url_for('main.dashboard') }}">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="{{ url_for('sales.invoices') }}">Invoices</a></li>
+                        <li class="breadcrumb-item active">{{ 'Edit Invoice' if invoice else 'New Invoice' }}</li>
+                    </ol>
+                </div>
+                <h4 class="page-title">{{ 'Edit Invoice' if invoice else 'New Invoice' }}</h4>
+            </div>
+        </div>
+    </div>
+
+    <form method="POST" action="{{ url_for('sales.save_invoice', invoice_id=invoice.id) if invoice else url_for('sales.save_invoice') }}" id="invoiceForm">
+        {{ form.hidden_tag() }}
+        
+        <div class="row">
+            <!-- Invoice Details -->
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Invoice Details</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.invoice_number.label(class="form-label") }}
+                                    {{ form.invoice_number(class="form-control" + (" is-invalid" if form.invoice_number.errors else "")) }}
+                                    {% if form.invoice_number.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.invoice_number.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.invoice_date.label(class="form-label") }}
+                                    {{ form.invoice_date(class="form-control" + (" is-invalid" if form.invoice_date.errors else ""), type="date") }}
+                                    {% if form.invoice_date.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.invoice_date.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.due_date.label(class="form-label") }}
+                                    {{ form.due_date(class="form-control" + (" is-invalid" if form.due_date.errors else ""), type="date") }}
+                                    {% if form.due_date.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.due_date.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.status.label(class="form-label") }}
+                                    {{ form.status(class="form-select" + (" is-invalid" if form.status.errors else "")) }}
+                                    {% if form.status.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.status.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.customer.label(class="form-label") }}
+                                    {{ form.customer(class="form-select" + (" is-invalid" if form.customer.errors else "")) }}
+                                    {% if form.customer.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.customer.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.sales_person.label(class="form-label") }}
+                                    {{ form.sales_person(class="form-select" + (" is-invalid" if form.sales_person.errors else "")) }}
+                                    {% if form.sales_person.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.sales_person.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.subject.label(class="form-label") }}
+                            {{ form.subject(class="form-control" + (" is-invalid" if form.subject.errors else "")) }}
+                            {% if form.subject.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.subject.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.notes.label(class="form-label") }}
+                            {{ form.notes(class="form-control" + (" is-invalid" if form.notes.errors else ""), rows="3") }}
+                            {% if form.notes.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.notes.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.currency.label(class="form-label") }}
+                                    {{ form.currency(class="form-select" + (" is-invalid" if form.currency.errors else "")) }}
+                                    {% if form.currency.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.currency.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.tax_rate.label(class="form-label") }}
+                                    <div class="input-group">
+                                        {{ form.tax_rate(class="form-control" + (" is-invalid" if form.tax_rate.errors else "")) }}
+                                        <span class="input-group-text">%</span>
+                                    </div>
+                                    {% if form.tax_rate.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.tax_rate.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.payment_terms.label(class="form-label") }}
+                                    {{ form.payment_terms(class="form-select" + (" is-invalid" if form.payment_terms.errors else "")) }}
+                                    {% if form.payment_terms.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.payment_terms.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.payment_method.label(class="form-label") }}
+                                    {{ form.payment_method(class="form-select" + (" is-invalid" if form.payment_method.errors else "")) }}
+                                    {% if form.payment_method.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.payment_method.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Products/Services -->
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">Products & Services</h5>
+                        <button type="button" class="btn btn-primary btn-sm" onclick="addProductRow()">
+                            <i class="bi bi-plus me-1"></i>Add Product
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-bordered" id="productsTable">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 30%;">Product/Service</th>
+                                        <th style="width: 15%;">Quantity</th>
+                                        <th style="width: 15%;">Unit Price</th>
+                                        <th style="width: 15%;">Discount</th>
+                                        <th style="width: 15%;">Total</th>
+                                        <th style="width: 10%;">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="productsTableBody">
+                                    {% if invoice and invoice.items %}
+                                        {% for item in invoice.items %}
+                                        <tr class="product-row">
+                                            <td>
+                                                <select name="product_id[]" class="form-select product-select" onchange="updateProductDetails(this)">
+                                                    <option value="">Select Product</option>
+                                                    {% for product in products %}
+                                                        <option value="{{ product.id }}" data-price="{{ product.unit_price }}" {{ 'selected' if item.product_id == product.id else '' }}>
+                                                            {{ product.name }}
+                                                        </option>
+                                                    {% endfor %}
+                                                </select>
+                                            </td>
+                                            <td>
+                                                <input type="number" name="quantity[]" class="form-control quantity-input" value="{{ item.quantity }}" min="1" step="1" onchange="calculateRowTotal(this)">
+                                            </td>
+                                            <td>
+                                                <input type="number" name="unit_price[]" class="form-control price-input" value="{{ item.unit_price }}" min="0" step="0.01" onchange="calculateRowTotal(this)">
+                                            </td>
+                                            <td>
+                                                <div class="input-group">
+                                                    <input type="number" name="discount[]" class="form-control discount-input" value="{{ item.discount or 0 }}" min="0" step="0.01" onchange="calculateRowTotal(this)">
+                                                    <span class="input-group-text">%</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control row-total" value="{{ "{:,.2f}".format(item.total_amount) }}" readonly>
+                                            </td>
+                                            <td>
+                                                <button type="button" class="btn btn-danger btn-sm" onclick="removeProductRow(this)">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    {% else %}
+                                        <tr class="product-row">
+                                            <td>
+                                                <select name="product_id[]" class="form-select product-select" onchange="updateProductDetails(this)">
+                                                    <option value="">Select Product</option>
+                                                    {% for product in products %}
+                                                        <option value="{{ product.id }}" data-price="{{ product.unit_price }}">{{ product.name }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </td>
+                                            <td>
+                                                <input type="number" name="quantity[]" class="form-control quantity-input" value="1" min="1" step="1" onchange="calculateRowTotal(this)">
+                                            </td>
+                                            <td>
+                                                <input type="number" name="unit_price[]" class="form-control price-input" value="0.00" min="0" step="0.01" onchange="calculateRowTotal(this)">
+                                            </td>
+                                            <td>
+                                                <div class="input-group">
+                                                    <input type="number" name="discount[]" class="form-control discount-input" value="0" min="0" step="0.01" onchange="calculateRowTotal(this)">
+                                                    <span class="input-group-text">%</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control row-total" value="0.00" readonly>
+                                            </td>
+                                            <td>
+                                                <button type="button" class="btn btn-danger btn-sm" onclick="removeProductRow(this)">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Billing Information -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Billing Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.billing_address.label(class="form-label") }}
+                                    {{ form.billing_address(class="form-control" + (" is-invalid" if form.billing_address.errors else ""), rows="3") }}
+                                    {% if form.billing_address.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.billing_address.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.shipping_address.label(class="form-label") }}
+                                    {{ form.shipping_address(class="form-control" + (" is-invalid" if form.shipping_address.errors else ""), rows="3") }}
+                                    {% if form.shipping_address.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.shipping_address.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-check">
+                            {{ form.same_as_billing(class="form-check-input") }}
+                            {{ form.same_as_billing.label(class="form-check-label") }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Terms and Conditions -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Terms & Conditions</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            {{ form.terms_conditions.label(class="form-label") }}
+                            {{ form.terms_conditions(class="form-control" + (" is-invalid" if form.terms_conditions.errors else ""), rows="4") }}
+                            {% if form.terms_conditions.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.terms_conditions.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <!-- Summary -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Summary</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Subtotal:</span>
+                            <span id="subtotal">₹0.00</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Discount:</span>
+                            <span id="totalDiscount">₹0.00</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Tax ({{ form.tax_rate.data or 0 }}%):</span>
+                            <span id="taxAmount">₹0.00</span>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between fw-bold fs-5">
+                            <span>Total:</span>
+                            <span id="grandTotal">₹0.00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Actions</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle me-1"></i>{{ 'Update Invoice' if invoice else 'Create Invoice' }}
+                            </button>
+                            <button type="button" class="btn btn-outline-success" onclick="saveAsDraft()">
+                                <i class="bi bi-save me-1"></i>Save as Draft
+                            </button>
+                            {% if invoice %}
+                                <button type="button" class="btn btn-outline-info" onclick="duplicateInvoice()">
+                                    <i class="bi bi-files me-1"></i>Duplicate
+                                </button>
+                                <button type="btn btn-outline-warning" onclick="sendInvoice()">
+                                    <i class="bi bi-envelope me-1"></i>Send to Customer
+                                </button>
+                            {% endif %}
+                            <a href="{{ url_for('sales.invoices') }}" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left me-1"></i>Cancel
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Quick Actions</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <button type="button" class="btn btn-outline-primary btn-sm" onclick="addCustomer()">
+                                <i class="bi bi-person-plus me-1"></i>Add New Customer
+                            </button>
+                            <button type="button" class="btn btn-outline-primary btn-sm" onclick="addProduct()">
+                                <i class="bi bi-plus-circle me-1"></i>Add New Product
+                            </button>
+                            <button type="button" class="btn btn-outline-info btn-sm" onclick="previewInvoice()">
+                                <i class="bi bi-eye me-1"></i>Preview
+                            </button>
+                            <button type="button" class="btn btn-outline-success btn-sm" onclick="generatePDF()">
+                                <i class="bi bi-file-pdf me-1"></i>Generate PDF
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment Information -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Payment Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label">Payment Status</label>
+                            <div class="d-flex gap-2">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="payment_status" id="pending" value="pending" {{ 'checked' if not invoice or invoice.status == 'draft' else '' }}>
+                                    <label class="form-check-label" for="pending">Pending</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="payment_status" id="partial" value="partial" {{ 'checked' if invoice and invoice.status == 'partial' else '' }}>
+                                    <label class="form-check-label" for="partial">Partial</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="payment_status" id="paid" value="paid" {{ 'checked' if invoice and invoice.status == 'paid' else '' }}>
+                                    <label class="form-check-label" for="paid">Paid</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Payment Date</label>
+                            <input type="date" class="form-control" name="payment_date" value="{{ invoice.payment_date.strftime('%Y-%m-%d') if invoice and invoice.payment_date else '' }}">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Payment Amount</label>
+                            <input type="number" class="form-control" name="payment_amount" value="{{ invoice.payment_amount if invoice else 0 }}" min="0" step="0.01" placeholder="0.00">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+let rowCounter = 1;
+
+function addProductRow() {
+    const tbody = document.getElementById('productsTableBody');
+    const newRow = document.createElement('tr');
+    newRow.className = 'product-row';
+    newRow.innerHTML = `
+        <td>
+            <select name="product_id[]" class="form-select product-select" onchange="updateProductDetails(this)">
+                <option value="">Select Product</option>
+                {% for product in products %}
+                    <option value="{{ product.id }}" data-price="{{ product.unit_price }}">{{ product.name }}</option>
+                {% endfor %}
+            </select>
+        </td>
+        <td>
+            <input type="number" name="quantity[]" class="form-control quantity-input" value="1" min="1" step="1" onchange="calculateRowTotal(this)">
+        </td>
+        <td>
+            <input type="number" name="unit_price[]" class="form-control price-input" value="0.00" min="0" step="0.01" onchange="calculateRowTotal(this)">
+        </td>
+        <td>
+            <div class="input-group">
+                <input type="number" name="discount[]" class="form-control discount-input" value="0" min="0" step="0.01" onchange="calculateRowTotal(this)">
+                <span class="input-group-text">%</span>
+            </div>
+        </td>
+        <td>
+            <input type="text" class="form-control row-total" value="0.00" readonly>
+        </td>
+        <td>
+            <button type="button" class="btn btn-danger btn-sm" onclick="removeProductRow(this)">
+                <i class="bi bi-trash"></i>
+            </button>
+        </td>
+    `;
+    tbody.appendChild(newRow);
+    rowCounter++;
+}
+
+function removeProductRow(button) {
+    if (document.querySelectorAll('.product-row').length > 1) {
+        button.closest('tr').remove();
+        calculateTotals();
+    }
+}
+
+function updateProductDetails(select) {
+    const row = select.closest('tr');
+    const priceInput = row.querySelector('.price-input');
+    const selectedOption = select.options[select.selectedIndex];
+    
+    if (selectedOption.value) {
+        const price = selectedOption.getAttribute('data-price');
+        priceInput.value = price;
+        calculateRowTotal(priceInput);
+    }
+}
+
+function calculateRowTotal(input) {
+    const row = input.closest('tr');
+    const quantity = parseFloat(row.querySelector('.quantity-input').value) || 0;
+    const price = parseFloat(row.querySelector('.price-input').value) || 0;
+    const discount = parseFloat(row.querySelector('.discount-input').value) || 0;
+    
+    const subtotal = quantity * price;
+    const discountAmount = subtotal * (discount / 100);
+    const total = subtotal - discountAmount;
+    
+    row.querySelector('.row-total').value = total.toFixed(2);
+    calculateTotals();
+}
+
+function calculateTotals() {
+    let subtotal = 0;
+    let totalDiscount = 0;
+    
+    document.querySelectorAll('.product-row').forEach(row => {
+        const quantity = parseFloat(row.querySelector('.quantity-input').value) || 0;
+        const price = parseFloat(row.querySelector('.price-input').value) || 0;
+        const discount = parseFloat(row.querySelector('.discount-input').value) || 0;
+        
+        const rowSubtotal = quantity * price;
+        const rowDiscount = rowSubtotal * (discount / 100);
+        
+        subtotal += rowSubtotal;
+        totalDiscount += rowDiscount;
+    });
+    
+    const taxRate = parseFloat(document.querySelector('select[name="tax_rate"]').value) || 0;
+    const taxAmount = (subtotal - totalDiscount) * (taxRate / 100);
+    const grandTotal = subtotal - totalDiscount + taxAmount;
+    
+    document.getElementById('subtotal').textContent = '₹' + subtotal.toFixed(2);
+    document.getElementById('totalDiscount').textContent = '₹' + totalDiscount.toFixed(2);
+    document.getElementById('taxAmount').textContent = '₹' + taxAmount.toFixed(2);
+    document.getElementById('grandTotal').textContent = '₹' + grandTotal.toFixed(2);
+}
+
+function saveAsDraft() {
+    const statusSelect = document.querySelector('select[name="status"]');
+    statusSelect.value = 'draft';
+    document.getElementById('invoiceForm').submit();
+}
+
+function duplicateInvoice() {
+    if (confirm('Create a copy of this invoice?')) {
+        window.location.href = "{{ url_for('sales.duplicate_invoice', invoice_id=invoice.id) if invoice else '#' }}";
+    }
+}
+
+function sendInvoice() {
+    if (confirm('Send this invoice to the customer?')) {
+        // Implement send functionality
+        alert('Send functionality will be implemented');
+    }
+}
+
+function addCustomer() {
+    window.open("{{ url_for('sales.new_customer') }}", '_blank');
+}
+
+function addProduct() {
+    window.open("{{ url_for('sales.new_product') }}", '_blank');
+}
+
+function previewInvoice() {
+    // Implement preview functionality
+    alert('Preview functionality will be implemented');
+}
+
+function generatePDF() {
+    // Implement PDF generation
+    alert('PDF generation will be implemented');
+}
+
+// Handle same as billing checkbox
+document.addEventListener('DOMContentLoaded', function() {
+    const sameAsBillingCheckbox = document.querySelector('input[name="same_as_billing"]');
+    const shippingAddressField = document.querySelector('textarea[name="shipping_address"]');
+    
+    if (sameAsBillingCheckbox && shippingAddressField) {
+        sameAsBillingCheckbox.addEventListener('change', function() {
+            if (this.checked) {
+                const billingAddress = document.querySelector('textarea[name="billing_address"]').value;
+                shippingAddressField.value = billingAddress;
+                shippingAddressField.disabled = true;
+            } else {
+                shippingAddressField.disabled = false;
+            }
+        });
+    }
+    
+    // Initialize calculations
+    calculateTotals();
+    
+    // Add event listeners for tax rate changes
+    document.querySelector('select[name="tax_rate"]').addEventListener('change', calculateTotals);
+});
+</script>
+{% endblock %}

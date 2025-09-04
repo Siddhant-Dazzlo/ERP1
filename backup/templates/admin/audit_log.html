@@ -1,0 +1,350 @@
+{% extends "base.html" %}
+
+{% block title %}Audit Log{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="page-title-box">
+                <div class="page-title-right">
+                    <ol class="breadcrumb m-0">
+                        <li class="breadcrumb-item"><a href="{{ url_for('main.dashboard') }}">Dashboard</a></li>
+                        <li class="breadcrumb-item active">Audit Log</li>
+                    </ol>
+                </div>
+                <h4 class="page-title">Audit Log</h4>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="row">
+        <div class="col-xl-3 col-md-6">
+            <div class="stats-card">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <div class="stats-number">{{ total_events }}</div>
+                        <div class="stats-label">Total Events</div>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-activity fs-1"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="stats-card">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <div class="stats-number">{{ today_events }}</div>
+                        <div class="stats-label">Today's Events</div>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-calendar-day fs-1"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="stats-card">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <div class="stats-number">{{ security_events }}</div>
+                        <div class="stats-label">Security Events</div>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-shield-exclamation fs-1"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="stats-card">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <div class="stats-number">{{ unique_users }}</div>
+                        <div class="stats-label">Active Users</div>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-people fs-1"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters and Search -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Filter & Search</h5>
+                </div>
+                <div class="card-body">
+                    <form method="GET" action="{{ url_for('admin.audit_log') }}">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label class="form-label">Event Type</label>
+                                    <select name="event_type" class="form-select">
+                                        <option value="">All Events</option>
+                                        <option value="login" {{ 'selected' if request.args.get('event_type') == 'login' }}>Login</option>
+                                        <option value="logout" {{ 'selected' if request.args.get('event_type') == 'logout' }}>Logout</option>
+                                        <option value="create" {{ 'selected' if request.args.get('event_type') == 'create' }}>Create</option>
+                                        <option value="update" {{ 'selected' if request.args.get('event_type') == 'update' }}>Update</option>
+                                        <option value="delete" {{ 'selected' if request.args.get('event_type') == 'delete' }}>Delete</option>
+                                        <option value="export" {{ 'selected' if request.args.get('event_type') == 'export' }}>Export</option>
+                                        <option value="security" {{ 'selected' if request.args.get('event_type') == 'security' }}>Security</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label class="form-label">User</label>
+                                    <select name="user_id" class="form-select">
+                                        <option value="">All Users</option>
+                                        {% for user in users %}
+                                        <option value="{{ user.id }}" {{ 'selected' if request.args.get('user_id')|int == user.id }}>{{ user.get_full_name() }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="mb-3">
+                                    <label class="form-label">Date From</label>
+                                    <input type="date" name="date_from" class="form-control" value="{{ request.args.get('date_from', '') }}">
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="mb-3">
+                                    <label class="form-label">Date To</label>
+                                    <input type="date" name="date_to" class="form-control" value="{{ request.args.get('date_to', '') }}">
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="mb-3">
+                                    <label class="form-label">&nbsp;</label>
+                                    <div class="d-grid">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="bi bi-search me-1"></i>Filter
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Audit Log Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Audit Events</h5>
+                    <div>
+                        <button class="btn btn-outline-success me-2" onclick="exportAuditLog()">
+                            <i class="bi bi-download me-1"></i>Export
+                        </button>
+                        <button class="btn btn-outline-danger" onclick="clearOldLogs()">
+                            <i class="bi bi-trash me-1"></i>Clear Old Logs
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Timestamp</th>
+                                    <th>User</th>
+                                    <th>Event Type</th>
+                                    <th>Resource</th>
+                                    <th>Details</th>
+                                    <th>IP Address</th>
+                                    <th>User Agent</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for event in audit_events.items %}
+                                <tr class="{{ 'table-warning' if event.event_type == 'security' else 'table-info' if event.event_type == 'login' else '' }}">
+                                    <td>
+                                        <div class="d-flex flex-column">
+                                            <span class="fw-bold">{{ event.timestamp.strftime('%Y-%m-%d') }}</span>
+                                            <small class="text-muted">{{ event.timestamp.strftime('%H:%M:%S') }}</small>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-sm me-2">
+                                                {% if event.user and event.user.avatar_url %}
+                                                    <img src="{{ event.user.avatar_url }}" class="rounded-circle" alt="Avatar" style="width: 32px; height: 32px;">
+                                                {% else %}
+                                                    <div class="avatar-title rounded-circle bg-secondary" style="width: 32px; height: 32px; line-height: 32px;">
+                                                        {% if event.user %}
+                                                            {{ event.user.first_name[0] }}{{ event.user.last_name[0] }}
+                                                        {% else %}
+                                                            ?
+                                                        {% endif %}
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                            <div>
+                                                {% if event.user %}
+                                                    <h6 class="mb-0 fs-6">{{ event.user.get_full_name() }}</h6>
+                                                    <small class="text-muted">{{ event.user.role.value.replace('_', ' ').title() }}</small>
+                                                {% else %}
+                                                    <span class="text-muted">System</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ 'danger' if event.event_type == 'security' else 'success' if event.event_type == 'login' else 'warning' if event.event_type == 'logout' else 'info' }}">
+                                            {{ event.event_type.title() }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex flex-column">
+                                            <span class="fw-bold">{{ event.resource_type or 'N/A' }}</span>
+                                            {% if event.resource_id %}
+                                                <small class="text-muted">ID: {{ event.resource_id }}</small>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="text-truncate" style="max-width: 200px;" title="{{ event.details }}">
+                                            {{ event.details or 'No details provided' }}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <code class="small">{{ event.ip_address or 'N/A' }}</code>
+                                    </td>
+                                    <td>
+                                        <div class="text-truncate" style="max-width: 150px;" title="{{ event.user_agent }}">
+                                            {{ event.user_agent or 'N/A' }}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-info" onclick="viewEventDetails({{ event.id }})">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    {% if audit_events.pages > 1 %}
+                    <nav aria-label="Audit log pagination">
+                        <ul class="pagination justify-content-center">
+                            {% if audit_events.has_prev %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('admin.audit_log', page=audit_events.prev_num, **request.args) }}">Previous</a>
+                                </li>
+                            {% endif %}
+                            
+                            {% for page_num in audit_events.iter_pages() %}
+                                {% if page_num %}
+                                    {% if page_num != audit_events.page %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="{{ url_for('admin.audit_log', page=page_num, **request.args) }}">{{ page_num }}</a>
+                                        </li>
+                                    {% else %}
+                                        <li class="page-item active">
+                                            <span class="page-link">{{ page_num }}</span>
+                                        </li>
+                                    {% endif %}
+                                {% else %}
+                                    <li class="page-item disabled">
+                                        <span class="page-link">...</span>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if audit_events.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('admin.audit_log', page=audit_events.next_num, **request.args) }}">Next</a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Event Details Modal -->
+<div class="modal fade" id="eventDetailsModal" tabindex="-1" aria-labelledby="eventDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="eventDetailsModalLabel">Event Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="eventDetailsContent">
+                <!-- Content will be loaded here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function viewEventDetails(eventId) {
+    fetch(`/admin/audit-log/${eventId}/details`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('eventDetailsContent').innerHTML = data.html;
+                new bootstrap.Modal(document.getElementById('eventDetailsModal')).show();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        });
+}
+
+function exportAuditLog() {
+    const currentUrl = new URL(window.location);
+    currentUrl.searchParams.set('export', 'true');
+    window.location.href = currentUrl.toString();
+}
+
+function clearOldLogs() {
+    if (confirm('Are you sure you want to clear audit logs older than 90 days? This action cannot be undone.')) {
+        fetch('/admin/audit-log/clear-old', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Old audit logs cleared successfully!');
+                location.reload();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        });
+    }
+}
+
+// Auto-refresh every 30 seconds for security events
+setInterval(function() {
+    if (document.querySelector('.table-warning')) {
+        location.reload();
+    }
+}, 30000);
+</script>
+{% endblock %}

@@ -1,0 +1,503 @@
+{% extends "base.html" %}
+
+{% block title %}Notifications{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="page-title-box">
+                <div class="page-title-right">
+                    <ol class="breadcrumb m-0">
+                        <li class="breadcrumb-item"><a href="{{ url_for('main.dashboard') }}">Dashboard</a></li>
+                        <li class="breadcrumb-item active">Notifications</li>
+                    </ol>
+                </div>
+                <h4 class="page-title">Notifications</h4>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Stats -->
+    <div class="row">
+        <div class="col-xl-3 col-md-6">
+            <div class="stats-card">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <div class="stats-number">{{ total_notifications }}</div>
+                        <div class="stats-label">Total Notifications</div>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-bell fs-1"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="stats-card">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <div class="stats-number">{{ unread_count }}</div>
+                        <div class="stats-label">Unread</div>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-envelope fs-1"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="stats-card">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <div class="stats-number">{{ today_count }}</div>
+                        <div class="stats-label">Today</div>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-calendar-day fs-1"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="stats-card">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <div class="stats-number">{{ important_count }}</div>
+                        <div class="stats-label">Important</div>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-exclamation-triangle fs-1"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Actions -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Notifications</h5>
+                    <div>
+                        <button class="btn btn-outline-success me-2" onclick="markAllAsRead()">
+                            <i class="bi bi-check-all me-1"></i>Mark All as Read
+                        </button>
+                        <button class="btn btn-outline-danger me-2" onclick="clearAllNotifications()">
+                            <i class="bi bi-trash me-1"></i>Clear All
+                        </button>
+                        <button class="btn btn-outline-primary" onclick="refreshNotifications()">
+                            <i class="bi bi-arrow-clockwise me-1"></i>Refresh
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Notification Filters -->
+                    <div class="row mb-3">
+                        <div class="col-md-3">
+                            <select class="form-select" id="typeFilter" onchange="filterNotifications()">
+                                <option value="">All Types</option>
+                                <option value="system">System</option>
+                                <option value="sales">Sales</option>
+                                <option value="billing">Billing</option>
+                                <option value="user">User</option>
+                                <option value="security">Security</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select" id="priorityFilter" onchange="filterNotifications()">
+                                <option value="">All Priorities</option>
+                                <option value="high">High</option>
+                                <option value="medium">Medium</option>
+                                <option value="low">Low</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select" id="statusFilter" onchange="filterNotifications()">
+                                <option value="">All Status</option>
+                                <option value="unread">Unread</option>
+                                <option value="read">Read</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <input type="date" class="form-control" id="dateFilter" onchange="filterNotifications()">
+                        </div>
+                    </div>
+
+                    <!-- Notifications List -->
+                    <div id="notificationsList">
+                        {% if notifications %}
+                            {% for notification in notifications %}
+                            <div class="notification-item mb-3 p-3 border rounded {{ 'border-primary' if notification.priority == 'high' else 'border-warning' if notification.priority == 'medium' else 'border-secondary' }} {{ 'bg-light' if notification.is_read else 'bg-white' }}" 
+                                 data-type="{{ notification.type }}" 
+                                 data-priority="{{ notification.priority }}" 
+                                 data-status="{{ 'read' if notification.is_read else 'unread' }}"
+                                 data-date="{{ notification.created_at.strftime('%Y-%m-%d') }}">
+                                <div class="row align-items-center">
+                                    <div class="col-md-1">
+                                        <div class="text-center">
+                                            {% if notification.type == 'system' %}
+                                                <i class="bi bi-gear fs-4 text-primary"></i>
+                                            {% elif notification.type == 'sales' %}
+                                                <i class="bi bi-graph-up fs-4 text-success"></i>
+                                            {% elif notification.type == 'billing' %}
+                                                <i class="bi bi-credit-card fs-4 text-warning"></i>
+                                            {% elif notification.type == 'user' %}
+                                                <i class="bi bi-person fs-4 text-info"></i>
+                                            {% elif notification.type == 'security' %}
+                                                <i class="bi bi-shield-exclamation fs-4 text-danger"></i>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-8">
+                                        <div class="d-flex align-items-center mb-2">
+                                            <h6 class="mb-0 me-2">{{ notification.title }}</h6>
+                                            {% if not notification.is_read %}
+                                                <span class="badge bg-primary">New</span>
+                                            {% endif %}
+                                            <span class="badge bg-{{ 'danger' if notification.priority == 'high' else 'warning' if notification.priority == 'medium' else 'secondary' }} ms-2">
+                                                {{ notification.priority.title() }}
+                                            </span>
+                                        </div>
+                                        <p class="mb-2">{{ notification.message }}</p>
+                                        <div class="d-flex align-items-center">
+                                            <small class="text-muted me-3">
+                                                <i class="bi bi-clock me-1"></i>
+                                                {{ notification.created_at.strftime('%Y-%m-%d %H:%M') }}
+                                            </small>
+                                            {% if notification.action_url %}
+                                                <a href="{{ notification.action_url }}" class="btn btn-sm btn-outline-primary">
+                                                    <i class="bi bi-arrow-right me-1"></i>View Details
+                                                </a>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="d-flex flex-column align-items-end">
+                                            <div class="btn-group-vertical" role="group">
+                                                {% if not notification.is_read %}
+                                                    <button class="btn btn-sm btn-outline-success" onclick="markAsRead({{ notification.id }})">
+                                                        <i class="bi bi-check me-1"></i>Mark Read
+                                                    </button>
+                                                {% endif %}
+                                                <button class="btn btn-sm btn-outline-danger" onclick="deleteNotification({{ notification.id }})">
+                                                    <i class="bi bi-trash me-1"></i>Delete
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="text-center py-5">
+                                <i class="bi bi-bell-slash fs-1 text-muted mb-3"></i>
+                                <h5>No notifications</h5>
+                                <p class="text-muted">You're all caught up! No new notifications at the moment.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Pagination -->
+                    {% if pagination and pagination.pages > 1 %}
+                    <nav aria-label="Notifications pagination">
+                        <ul class="pagination justify-content-center">
+                            {% if pagination.has_prev %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('main.notifications', page=pagination.prev_num) }}">Previous</a>
+                                </li>
+                            {% endif %}
+                            
+                            {% for page_num in pagination.iter_pages() %}
+                                {% if page_num %}
+                                    {% if page_num != pagination.page %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="{{ url_for('main.notifications', page=page_num) }}">{{ page_num }}</a>
+                                        </li>
+                                    {% else %}
+                                        <li class="page-item active">
+                                            <span class="page-link">{{ page_num }}</span>
+                                        </li>
+                                    {% endif %}
+                                {% else %}
+                                    <li class="page-item disabled">
+                                        <span class="page-link">...</span>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if pagination.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('main.notifications', page=pagination.next_num) }}">Next</a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Settings -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Notification Settings</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('main.update_notification_settings') }}">
+                        {{ settings_form.hidden_tag() }}
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>Email Notifications</h6>
+                                <div class="mb-3">
+                                    <div class="form-check">
+                                        {{ settings_form.email_system(class="form-check-input") }}
+                                        <label class="form-check-label" for="{{ settings_form.email_system.id }}">
+                                            System notifications
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <div class="form-check">
+                                        {{ settings_form.email_sales(class="form-check-input") }}
+                                        <label class="form-check-label" for="{{ settings_form.email_sales.id }}">
+                                            Sales updates
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <div class="form-check">
+                                        {{ settings_form.email_billing(class="form-check-input") }}
+                                        <label class="form-check-label" for="{{ settings_form.email_billing.id }}">
+                                            Billing reminders
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>Push Notifications</h6>
+                                <div class="mb-3">
+                                    <div class="form-check">
+                                        {{ settings_form.push_system(class="form-check-input") }}
+                                        <label class="form-check-label" for="{{ settings_form.push_system.id }}">
+                                            System notifications
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <div class="form-check">
+                                        {{ settings_form.push_sales(class="form-check-input") }}
+                                        <label class="form-check-label" for="{{ settings_form.push_sales.id }}">
+                                            Sales updates
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <div class="form-check">
+                                        {{ settings_form.push_billing(class="form-check-input") }}
+                                        <label class="form-check-label" for="{{ settings_form.push_billing.id }}">
+                                            Billing reminders
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>Notification Frequency</h6>
+                                <div class="mb-3">
+                                    {{ settings_form.frequency.label(class="form-label") }}
+                                    {{ settings_form.frequency(class="form-select") }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>Quiet Hours</h6>
+                                <div class="row">
+                                    <div class="col-6">
+                                        <div class="mb-3">
+                                            {{ settings_form.quiet_hours_start.label(class="form-label") }}
+                                            {{ settings_form.quiet_hours_start(class="form-control", type="time") }}
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="mb-3">
+                                            {{ settings_form.quiet_hours_end.label(class="form-label") }}
+                                            {{ settings_form.quiet_hours_end(class="form-control", type="time") }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle me-1"></i>Save Settings
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function markAsRead(notificationId) {
+    fetch(`/notifications/${notificationId}/mark-read`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Error: ' + data.message);
+        }
+    });
+}
+
+function deleteNotification(notificationId) {
+    if (confirm('Are you sure you want to delete this notification?')) {
+        fetch(`/notifications/${notificationId}/delete`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        });
+    }
+}
+
+function markAllAsRead() {
+    if (confirm('Mark all notifications as read?')) {
+        fetch('/notifications/mark-all-read', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        });
+    }
+}
+
+function clearAllNotifications() {
+    if (confirm('Are you sure you want to clear all notifications? This action cannot be undone.')) {
+        fetch('/notifications/clear-all', {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        });
+    }
+}
+
+function refreshNotifications() {
+    location.reload();
+}
+
+function filterNotifications() {
+    const typeFilter = document.getElementById('typeFilter').value;
+    const priorityFilter = document.getElementById('priorityFilter').value;
+    const statusFilter = document.getElementById('statusFilter').value;
+    const dateFilter = document.getElementById('dateFilter').value;
+    
+    const notifications = document.querySelectorAll('.notification-item');
+    
+    notifications.forEach(notification => {
+        let show = true;
+        
+        if (typeFilter && notification.dataset.type !== typeFilter) {
+            show = false;
+        }
+        
+        if (priorityFilter && notification.dataset.priority !== priorityFilter) {
+            show = false;
+        }
+        
+        if (statusFilter && notification.dataset.status !== statusFilter) {
+            show = false;
+        }
+        
+        if (dateFilter && notification.dataset.date !== dateFilter) {
+            show = false;
+        }
+        
+        notification.style.display = show ? 'block' : 'none';
+    });
+}
+
+// Auto-refresh notifications every 30 seconds
+setInterval(function() {
+    // Only refresh if there are unread notifications
+    if ({{ unread_count }} > 0) {
+        fetch('/notifications/count')
+            .then(response => response.json())
+            .then(data => {
+                if (data.unread_count !== {{ unread_count }}) {
+                    location.reload();
+                }
+            });
+    }
+}, 30000);
+</script>
+
+<style>
+.notification-item {
+    transition: all 0.3s ease;
+}
+
+.notification-item:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.notification-item.border-primary {
+    border-left: 4px solid #dc3545 !important;
+}
+
+.notification-item.border-warning {
+    border-left: 4px solid #ffc107 !important;
+}
+
+.notification-item.border-secondary {
+    border-left: 4px solid #6c757d !important;
+}
+
+.btn-group-vertical .btn {
+    margin-bottom: 0.25rem;
+}
+
+.btn-group-vertical .btn:last-child {
+    margin-bottom: 0;
+}
+</style>
+{% endblock %}

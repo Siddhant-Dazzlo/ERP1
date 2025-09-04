@@ -1,0 +1,489 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - SaaS ERP{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">Admin Dashboard</h1>
+            <p class="text-muted">System overview and administrative controls</p>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-outline-primary" onclick="refreshDashboard()">
+                <i class="bi bi-arrow-clockwise me-2"></i>Refresh
+            </button>
+            <button class="btn btn-outline-success" onclick="exportData()">
+                <i class="bi bi-download me-2"></i>Export Data
+            </button>
+        </div>
+    </div>
+
+    <!-- System Overview Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title text-white-50">Total Companies</h6>
+                            <h3 class="mb-0">{{ stats.total_companies }}</h3>
+                        </div>
+                        <i class="bi bi-building fs-1 opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title text-white-50">Active Users</h6>
+                            <h3 class="mb-0">{{ stats.active_users }}</h3>
+                        </div>
+                        <i class="bi bi-people fs-1 opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title text-white-50">Revenue (MTD)</h6>
+                            <h3 class="mb-0">${{ "%.0f"|format(stats.monthly_revenue) }}</h3>
+                        </div>
+                        <i class="bi bi-currency-dollar fs-1 opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title text-white-50">System Health</h6>
+                            <h3 class="mb-0">{{ stats.system_health }}%</h3>
+                        </div>
+                        <i class="bi bi-heart-pulse fs-1 opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <a href="{{ url_for('admin.company_settings') }}" class="btn btn-outline-primary w-100 h-100 d-flex flex-column align-items-center justify-content-center py-3">
+                                <i class="bi bi-building fs-2 mb-2"></i>
+                                <span>Company Settings</span>
+                            </a>
+                        </div>
+                        <div class="col-6">
+                            <a href="{{ url_for('admin.users') }}" class="btn btn-outline-success w-100 h-100 d-flex flex-column align-items-center justify-content-center py-3">
+                                <i class="bi bi-people fs-2 mb-2"></i>
+                                <span>Manage Users</span>
+                            </a>
+                        </div>
+                        <div class="col-6">
+                            <a href="{{ url_for('admin.reports') }}" class="btn btn-outline-warning w-100 h-100 d-flex flex-column align-items-center justify-content-center py-3">
+                                <i class="bi bi-credit-card fs-2 mb-2"></i>
+                                <span>Reports</span>
+                            </a>
+                        </div>
+                        <div class="col-6">
+                            <a href="{{ url_for('admin.system_status') }}" class="btn btn-outline-info w-100 h-100 d-flex flex-column align-items-center justify-content-center py-3">
+                                <i class="bi bi-gear fs-2 mb-2"></i>
+                                <span>System Status</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">System Status</h5>
+                </div>
+                <div class="card-body">
+                    <div class="system-status">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span>Database</span>
+                            <span class="badge bg-success">Online</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span>Redis Cache</span>
+                            <span class="badge bg-success">Online</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span>Email Service</span>
+                            <span class="badge bg-success">Online</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span>Payment Gateway</span>
+                            <span class="badge bg-success">Online</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span>Storage</span>
+                            <span class="badge bg-success">Online</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity and System Metrics -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Recent System Activity</h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_activities %}
+                    <div class="activity-timeline">
+                        {% for activity in recent_activities %}
+                        <div class="activity-item d-flex mb-3">
+                            <div class="activity-icon me-3">
+                                <div class="avatar-sm">
+                                    <div class="avatar-title bg-light rounded-circle">
+                                        <i class="bi bi-{{ 
+                                            'person-plus' if activity.type == 'user_created' else
+                                            'building' if activity.type == 'company_created' else
+                                            'credit-card' if activity.type == 'subscription' else
+                                            'exclamation-triangle' if activity.type == 'error' else
+                                            'info-circle'
+                                        }}"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="activity-content flex-grow-1">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <p class="mb-1">{{ activity.description }}</p>
+                                        <small class="text-muted">{{ activity.created_at|timesince }} ago</small>
+                                    </div>
+                                    <span class="badge bg-{{ 
+                                        'success' if activity.level == 'info' else
+                                        'warning' if activity.level == 'warning' else
+                                        'danger' if activity.level == 'error' else 'secondary'
+                                    }}">{{ activity.level|title }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="bi bi-activity fs-1 text-muted mb-3"></i>
+                        <h6 class="text-muted">No recent activity</h6>
+                        <p class="text-muted">System activity will appear here.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">System Metrics</h5>
+                </div>
+                <div class="card-body">
+                    <div class="metric-item mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span>CPU Usage</span>
+                            <span class="text-primary">{{ metrics.cpu_usage }}%</span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar" role="progressbar" 
+                                 style="width: {{ metrics.cpu_usage }}%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="metric-item mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span>Memory Usage</span>
+                            <span class="text-primary">{{ metrics.memory_usage }}%</span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar" role="progressbar" 
+                                 style="width: {{ metrics.memory_usage }}%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="metric-item mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span>Disk Usage</span>
+                            <span class="text-primary">{{ metrics.disk_usage }}%</span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar" role="progressbar" 
+                                 style="width: {{ metrics.disk_usage }}%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="metric-item">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span>Network I/O</span>
+                            <span class="text-primary">{{ metrics.network_io }} MB/s</span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar" role="progressbar" 
+                                 style="width: {{ (metrics.network_io / 100) * 100 }}%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Company Statistics -->
+    <div class="row g-4 mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Company Statistics</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <div class="h4 text-primary mb-1">{{ company_stats.starter_plan }}</div>
+                                <small class="text-muted">Starter Plan</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <div class="h4 text-success mb-1">{{ company_stats.pro_plan }}</div>
+                                <small class="text-muted">Pro Plan</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <div class="h4 text-warning mb-1">{{ company_stats.enterprise_plan }}</div>
+                                <small class="text-muted">Enterprise Plan</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <div class="h4 text-info mb-1">{{ company_stats.trial_companies }}</div>
+                                <small class="text-muted">Trial Companies</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Companies and Users -->
+    <div class="row g-4">
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Recent Companies</h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_companies %}
+                    <div class="list-group list-group-flush">
+                        {% for company in recent_companies %}
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div class="d-flex align-items-center">
+                                <div class="avatar-sm me-3">
+                                    <div class="avatar-title bg-light rounded-circle">
+                                        {{ company.name[0]|upper }}
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="fw-medium">{{ company.name }}</div>
+                                    <small class="text-muted">{{ company.plan_type|title }} Plan</small>
+                                </div>
+                            </div>
+                            <span class="badge bg-{{ 'success' if company.is_active else 'danger' }}">
+                                {{ 'Active' if company.is_active else 'Inactive' }}
+                            </span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="bi bi-building fs-1 text-muted mb-3"></i>
+                        <h6 class="text-muted">No companies found</h6>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Recent Users</h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_users %}
+                    <div class="list-group list-group-flush">
+                        {% for user in recent_users %}
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div class="d-flex align-items-center">
+                                <div class="avatar-sm me-3">
+                                    <div class="avatar-title bg-light rounded-circle">
+                                        {{ user.name[0]|upper }}
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="fw-medium">{{ user.name }}</div>
+                                    <small class="text-muted">{{ user.email }}</small>
+                                </div>
+                            </div>
+                            <span class="badge bg-{{ 'success' if user.is_active else 'danger' }}">
+                                {{ 'Active' if user.is_active else 'Inactive' }}
+                            </span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="bi bi-people fs-1 text-muted mb-3"></i>
+                        <h6 class="text-muted">No users found</h6>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.avatar-sm {
+    width: 32px;
+    height: 32px;
+}
+
+.avatar-title {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.card.bg-primary, .card.bg-success, .card.bg-warning, .card.bg-info {
+    border: none;
+}
+
+.card.bg-primary .card-title, .card.bg-success .card-title, 
+.card.bg-warning .card-title, .card.bg-info .card-title {
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.activity-timeline .activity-item:not(:last-child) {
+    border-bottom: 1px solid #f0f0f0;
+    padding-bottom: 1rem;
+}
+
+.metric-item .progress {
+    background-color: #e9ecef;
+}
+
+.metric-item .progress-bar {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.system-status .badge {
+    font-size: 0.75rem;
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function refreshDashboard() {
+    window.location.reload();
+}
+
+function exportData() {
+    // Show export options modal
+    const exportModal = new bootstrap.Modal(document.getElementById('exportDataModal'));
+    exportModal.show();
+}
+
+// Auto-refresh dashboard every 5 minutes
+setInterval(() => {
+    // You can implement AJAX refresh here instead of full page reload
+    // For now, we'll just show a notification
+    console.log('Dashboard auto-refresh triggered');
+}, 300000);
+
+// Real-time system metrics update (every 30 seconds)
+setInterval(() => {
+    fetch('/admin/api/system-metrics')
+        .then(response => response.json())
+        .then(data => {
+            // Update metrics display
+            updateSystemMetrics(data);
+        })
+        .catch(error => {
+            console.error('Failed to fetch system metrics:', error);
+        });
+}, 30000);
+
+function updateSystemMetrics(metrics) {
+    // Update CPU usage
+    const cpuProgress = document.querySelector('.metric-item:nth-child(1) .progress-bar');
+    if (cpuProgress) {
+        cpuProgress.style.width = metrics.cpu_usage + '%';
+        cpuProgress.previousElementSibling.textContent = metrics.cpu_usage + '%';
+    }
+    
+    // Update memory usage
+    const memoryProgress = document.querySelector('.metric-item:nth-child(2) .progress-bar');
+    if (memoryProgress) {
+        memoryProgress.style.width = metrics.memory_usage + '%';
+        memoryProgress.previousElementSibling.textContent = metrics.memory_usage + '%';
+    }
+    
+    // Update disk usage
+    const diskProgress = document.querySelector('.metric-item:nth-child(3) .progress-bar');
+    if (diskProgress) {
+        diskProgress.style.width = metrics.disk_usage + '%';
+        diskProgress.previousElementSibling.textContent = metrics.disk_usage + '%';
+    }
+    
+    // Update network I/O
+    const networkProgress = document.querySelector('.metric-item:nth-child(4) .progress-bar');
+    if (networkProgress) {
+        const networkPercent = (metrics.network_io / 100) * 100;
+        networkProgress.style.width = Math.min(networkPercent, 100) + '%';
+        networkProgress.previousElementSibling.textContent = metrics.network_io + ' MB/s';
+    }
+}
+
+// Initialize tooltips
+document.addEventListener('DOMContentLoaded', function() {
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+});
+</script>
+{% endblock %}

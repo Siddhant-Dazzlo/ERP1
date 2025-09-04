@@ -1,0 +1,481 @@
+{% extends "base.html" %}
+
+{% block title %}Razorpay Payment{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="page-title-box">
+                <div class="page-title-right">
+                    <ol class="breadcrumb m-0">
+                        <li class="breadcrumb-item"><a href="{{ url_for('main.dashboard') }}">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="{{ url_for('billing.subscription') }}">Billing</a></li>
+                        <li class="breadcrumb-item active">Razorpay Payment</li>
+                    </ol>
+                </div>
+                <h4 class="page-title">Razorpay Payment</h4>
+            </div>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="header-title">Payment Details</h4>
+                    <p class="text-muted mb-0">Complete your payment using Razorpay secure gateway.</p>
+                </div>
+                <div class="card-body">
+                    <!-- Payment Summary -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6 class="card-title">Payment Summary</h6>
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span>Plan:</span>
+                                        <strong>{{ subscription.plan.name }}</strong>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span>Amount:</span>
+                                        <strong>₹{{ "{:,.2f}".format(subscription.amount) }}</strong>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span>Tax:</span>
+                                        <strong>₹{{ "{:,.2f}".format(subscription.tax_amount) }}</strong>
+                                    </div>
+                                    <hr>
+                                    <div class="d-flex justify-content-between">
+                                        <span class="fw-bold">Total:</span>
+                                        <strong class="text-primary fs-5">₹{{ "{:,.2f}".format(subscription.total_amount) }}</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6 class="card-title">Plan Features</h6>
+                                    <ul class="list-unstyled mb-0">
+                                        {% for feature in subscription.plan.features %}
+                                        <li class="mb-2">
+                                            <i class="bi bi-check-circle text-success me-2"></i>
+                                            {{ feature }}
+                                        </li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Payment Form -->
+                    <form id="razorpay-form" method="POST" action="{{ url_for('billing.process_razorpay_payment') }}">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.customer_name.label(class="form-label") }}
+                                    {{ form.customer_name(class="form-control", placeholder="Enter your full name") }}
+                                    {% if form.customer_name.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.customer_name.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.customer_email.label(class="form-label") }}
+                                    {{ form.customer_email(class="form-control", placeholder="Enter your email") }}
+                                    {% if form.customer_email.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.customer_email.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.customer_phone.label(class="form-label") }}
+                                    {{ form.customer_phone(class="form-control", placeholder="Enter your phone number") }}
+                                    {% if form.customer_phone.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.customer_phone.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.payment_method.label(class="form-label") }}
+                                    {{ form.payment_method(class="form-select") }}
+                                    {% if form.payment_method.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.payment_method.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.billing_address.label(class="form-label") }}
+                            {{ form.billing_address(class="form-control", rows="3", placeholder="Enter your billing address") }}
+                            {% if form.billing_address.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.billing_address.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    {{ form.city.label(class="form-label") }}
+                                    {{ form.city(class="form-control", placeholder="Enter city") }}
+                                    {% if form.city.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.city.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    {{ form.state.label(class="form-label") }}
+                                    {{ form.state(class="form-control", placeholder="Enter state") }}
+                                    {% if form.state.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.state.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    {{ form.postal_code.label(class="form-label") }}
+                                    {{ form.postal_code(class="form-control", placeholder="Enter postal code") }}
+                                    {% if form.postal_code.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.postal_code.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="form-check">
+                                {{ form.terms_accepted(class="form-check-input") }}
+                                <label class="form-check-label" for="{{ form.terms_accepted.id }}">
+                                    I agree to the <a href="#" onclick="showTerms()">Terms and Conditions</a> and <a href="#" onclick="showPrivacy()">Privacy Policy</a>
+                                </label>
+                                {% if form.terms_accepted.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.terms_accepted.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg" id="pay-button">
+                                <i class="bi bi-credit-card me-2"></i>
+                                Pay ₹{{ "{:,.2f}".format(subscription.total_amount) }}
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Payment Security Info -->
+                    <div class="mt-4">
+                        <div class="alert alert-info">
+                            <div class="d-flex">
+                                <i class="bi bi-shield-check fs-4 me-3"></i>
+                                <div>
+                                    <h6 class="alert-heading">Secure Payment</h6>
+                                    <p class="mb-0">Your payment information is encrypted and secure. We use Razorpay's industry-standard security protocols to protect your data.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment Methods Info -->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Accepted Payment Methods</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6 mb-3">
+                            <div class="payment-method">
+                                <i class="bi bi-credit-card fs-2 text-primary"></i>
+                                <p class="mb-0 small">Credit Cards</p>
+                            </div>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <div class="payment-method">
+                                <i class="bi bi-bank fs-2 text-success"></i>
+                                <p class="mb-0 small">Net Banking</p>
+                            </div>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <div class="payment-method">
+                                <i class="bi bi-phone fs-2 text-warning"></i>
+                                <p class="mb-0 small">UPI</p>
+                            </div>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <div class="payment-method">
+                                <i class="bi bi-wallet2 fs-2 text-info"></i>
+                                <p class="mb-0 small">Wallets</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Support -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Need Help?</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">If you encounter any issues during payment, our support team is here to help.</p>
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('main.contact') }}" class="btn btn-outline-primary">
+                            <i class="bi bi-headset me-1"></i>Contact Support
+                        </a>
+                        <a href="{{ url_for('main.help') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-question-circle me-1"></i>Help Center
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Terms Modal -->
+<div class="modal fade" id="termsModal" tabindex="-1" aria-labelledby="termsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="termsModalLabel">Terms and Conditions</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <h6>Subscription Terms</h6>
+                <p>By subscribing to our service, you agree to the following terms:</p>
+                <ul>
+                    <li>Subscriptions are billed on a recurring basis</li>
+                    <li>You can cancel your subscription at any time</li>
+                    <li>Refunds are processed according to our refund policy</li>
+                    <li>Service availability is subject to our SLA</li>
+                </ul>
+                
+                <h6>Payment Terms</h6>
+                <ul>
+                    <li>All payments are processed securely through Razorpay</li>
+                    <li>Prices are subject to change with 30 days notice</li>
+                    <li>Taxes are calculated based on your location</li>
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Privacy Modal -->
+<div class="modal fade" id="privacyModal" tabindex="-1" aria-labelledby="privacyModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="privacyModalLabel">Privacy Policy</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <h6>Data Protection</h6>
+                <p>We are committed to protecting your privacy and personal information:</p>
+                <ul>
+                    <li>Payment information is encrypted and secure</li>
+                    <li>Personal data is used only for service delivery</li>
+                    <li>We do not sell or share your information</li>
+                    <li>You have full control over your data</li>
+                </ul>
+                
+                <h6>Data Usage</h6>
+                <ul>
+                    <li>Billing information for payment processing</li>
+                    <li>Contact details for service communication</li>
+                    <li>Usage data for service improvement</li>
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Razorpay integration
+document.getElementById('razorpay-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    // Disable submit button
+    document.getElementById('pay-button').disabled = true;
+    document.getElementById('pay-button').innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Processing...';
+    
+    // Create Razorpay order
+    fetch('/billing/create-razorpay-order', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            subscription_id: '{{ subscription.id }}',
+            amount: {{ subscription.total_amount * 100 }}, // Convert to paise
+            currency: 'INR'
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Initialize Razorpay
+            const options = {
+                key: data.razorpay_key,
+                amount: data.amount,
+                currency: data.currency,
+                name: '{{ company.name }}',
+                description: '{{ subscription.plan.name }} Subscription',
+                order_id: data.order_id,
+                handler: function(response) {
+                    // Payment successful
+                    completePayment(response);
+                },
+                prefill: {
+                    name: document.getElementById('{{ form.customer_name.id }}').value,
+                    email: document.getElementById('{{ form.customer_email.id }}').value,
+                    contact: document.getElementById('{{ form.customer_phone.id }}').value
+                },
+                theme: {
+                    color: '#667eea'
+                }
+            };
+            
+            const rzp = new Razorpay(options);
+            rzp.open();
+        } else {
+            alert('Error: ' + data.message);
+            document.getElementById('pay-button').disabled = false;
+            document.getElementById('pay-button').innerHTML = '<i class="bi bi-credit-card me-2"></i>Pay ₹{{ "{:,.2f}".format(subscription.total_amount) }}';
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred. Please try again.');
+        document.getElementById('pay-button').disabled = false;
+        document.getElementById('pay-button').innerHTML = '<i class="bi bi-credit-card me-2"></i>Pay ₹{{ "{:,.2f}".format(subscription.total_amount) }}';
+    });
+});
+
+function completePayment(response) {
+    // Send payment verification to server
+    fetch('/billing/verify-razorpay-payment', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            subscription_id: '{{ subscription.id }}',
+            payment_id: response.razorpay_payment_id,
+            order_id: response.razorpay_order_id,
+            signature: response.razorpay_signature
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Payment successful - redirect to success page
+            window.location.href = data.redirect_url;
+        } else {
+            alert('Payment verification failed: ' + data.message);
+            document.getElementById('pay-button').disabled = false;
+            document.getElementById('pay-button').innerHTML = '<i class="bi bi-credit-card me-2"></i>Pay ₹{{ "{:,.2f}".format(subscription.total_amount) }}';
+        }
+    });
+}
+
+function showTerms() {
+    new bootstrap.Modal(document.getElementById('termsModal')).show();
+}
+
+function showPrivacy() {
+    new bootstrap.Modal(document.getElementById('privacyModal')).show();
+}
+
+// Load Razorpay script
+function loadRazorpayScript() {
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.async = true;
+    document.head.appendChild(script);
+}
+
+// Load script when page loads
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', loadRazorpayScript);
+} else {
+    loadRazorpayScript();
+}
+</script>
+
+<style>
+.payment-method {
+    padding: 1rem;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.payment-method:hover {
+    border-color: #667eea;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.payment-method i {
+    margin-bottom: 0.5rem;
+}
+</style>
+{% endblock %}

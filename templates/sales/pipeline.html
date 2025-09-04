@@ -1,0 +1,501 @@
+{% extends "base.html" %}
+
+{% block title %}Sales Pipeline - SaaS ERP{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">Sales Pipeline</h1>
+            <p class="text-muted">Visualize and manage your sales process with our Kanban board</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{{ url_for('sales.new_lead') }}" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-2"></i>New Lead
+            </a>
+            <button class="btn btn-outline-secondary" onclick="refreshPipeline()">
+                <i class="bi bi-arrow-clockwise me-2"></i>Refresh
+            </button>
+        </div>
+    </div>
+
+    <!-- Pipeline Statistics -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <div class="h4 mb-1 text-primary">{{ pipeline_stats.prospect }}</div>
+                    <small class="text-muted">Prospects</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <div class="h4 mb-1 text-info">{{ pipeline_stats.contacted }}</div>
+                    <small class="text-muted">Contacted</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <div class="h4 mb-1 text-warning">{{ pipeline_stats.qualified }}</div>
+                    <small class="text-muted">Qualified</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <div class="h4 mb-1 text-success">{{ pipeline_stats.closed_won }}</div>
+                    <small class="text-muted">Closed Won</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Kanban Board -->
+    <div class="row g-3" id="pipeline-board">
+        <!-- Prospect Column -->
+        <div class="col-lg-2 col-md-4">
+            <div class="pipeline-column">
+                <div class="column-header bg-primary text-white">
+                    <h6 class="mb-0">Prospect</h6>
+                    <span class="badge bg-light text-dark">{{ pipeline_data.prospect|length }}</span>
+                </div>
+                <div class="column-content" id="prospect-column">
+                    {% for lead in pipeline_data.prospect %}
+                    <div class="lead-card" data-lead-id="{{ lead.id }}" draggable="true">
+                        <div class="card-body p-3">
+                            <h6 class="card-title mb-1">{{ lead.first_name }} {{ lead.last_name }}</h6>
+                            {% if lead.company_name %}
+                            <p class="text-muted small mb-2">{{ lead.company_name }}</p>
+                            {% endif %}
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <small class="text-muted">{{ lead.email }}</small>
+                                <span class="badge bg-light text-dark">{{ lead.source|title }}</span>
+                            </div>
+                            {% if lead.estimated_value %}
+                            <div class="text-primary fw-bold">${{ "%.2f"|format(lead.estimated_value) }}</div>
+                            {% endif %}
+                            <div class="d-flex gap-1 mt-2">
+                                <a href="{{ url_for('sales.view_lead', lead_id=lead.id) }}" 
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <button class="btn btn-sm btn-outline-success" 
+                                        onclick="moveLead({{ lead.id }}, 'contacted')">
+                                    <i class="bi bi-arrow-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Contacted Column -->
+        <div class="col-lg-2 col-md-4">
+            <div class="pipeline-column">
+                <div class="column-header bg-info text-white">
+                    <h6 class="mb-0">Contacted</h6>
+                    <span class="badge bg-light text-dark">{{ pipeline_data.contacted|length }}</span>
+                </div>
+                <div class="column-content" id="contacted-column">
+                    {% for lead in pipeline_data.contacted %}
+                    <div class="lead-card" data-lead-id="{{ lead.id }}" draggable="true">
+                        <div class="card-body p-3">
+                            <h6 class="card-title mb-1">{{ lead.first_name }} {{ lead.last_name }}</h6>
+                            {% if lead.company_name %}
+                            <p class="text-muted small mb-2">{{ lead.company_name }}</p>
+                            {% endif %}
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <small class="text-muted">{{ lead.email }}</small>
+                                <span class="badge bg-light text-dark">{{ lead.source|title }}</span>
+                            </div>
+                            {% if lead.estimated_value %}
+                            <div class="text-primary fw-bold">${{ "%.2f"|format(lead.estimated_value) }}</div>
+                            {% endif %}
+                            <div class="d-flex gap-1 mt-2">
+                                <button class="btn btn-sm btn-outline-warning" 
+                                        onclick="moveLead({{ lead.id }}, 'prospect')">
+                                    <i class="bi bi-arrow-left"></i>
+                                </button>
+                                <a href="{{ url_for('sales.view_lead', lead_id=lead.id) }}" 
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <button class="btn btn-sm btn-outline-success" 
+                                        onclick="moveLead({{ lead.id }}, 'qualified')">
+                                    <i class="bi bi-arrow-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Qualified Column -->
+        <div class="col-lg-2 col-md-4">
+            <div class="pipeline-column">
+                <div class="column-header bg-warning text-white">
+                    <h6 class="mb-0">Qualified</h6>
+                    <span class="badge bg-light text-dark">{{ pipeline_data.qualified|length }}</span>
+                </div>
+                <div class="column-content" id="qualified-column">
+                    {% for lead in pipeline_data.qualified %}
+                    <div class="lead-card" data-lead-id="{{ lead.id }}" draggable="true">
+                        <div class="card-body p-3">
+                            <h6 class="card-title mb-1">{{ lead.first_name }} {{ lead.last_name }}</h6>
+                            {% if lead.company_name %}
+                            <p class="text-muted small mb-2">{{ lead.company_name }}</p>
+                            {% endif %}
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <small class="text-muted">{{ lead.email }}</small>
+                                <span class="badge bg-light text-dark">{{ lead.source|title }}</span>
+                            </div>
+                            {% if lead.estimated_value %}
+                            <div class="text-primary fw-bold">${{ "%.2f"|format(lead.estimated_value) }}</div>
+                            {% endif %}
+                            <div class="d-flex gap-1 mt-2">
+                                <button class="btn btn-sm btn-outline-info" 
+                                        onclick="moveLead({{ lead.id }}, 'contacted')">
+                                    <i class="bi bi-arrow-left"></i>
+                                </button>
+                                <a href="{{ url_for('sales.view_lead', lead_id=lead.id) }}" 
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <button class="btn btn-sm btn-outline-success" 
+                                        onclick="moveLead({{ lead.id }}, 'proposal')">
+                                    <i class="bi bi-arrow-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Proposal Column -->
+        <div class="col-lg-2 col-md-4">
+            <div class="pipeline-column">
+                <div class="column-header bg-primary text-white">
+                    <h6 class="mb-0">Proposal</h6>
+                    <span class="badge bg-light text-dark">{{ pipeline_data.proposal|length }}</span>
+                </div>
+                <div class="column-content" id="proposal-column">
+                    {% for lead in pipeline_data.proposal %}
+                    <div class="lead-card" data-lead-id="{{ lead.id }}" draggable="true">
+                        <div class="card-body p-3">
+                            <h6 class="card-title mb-1">{{ lead.first_name }} {{ lead.last_name }}</h6>
+                            {% if lead.company_name %}
+                            <p class="text-muted small mb-2">{{ lead.company_name }}</p>
+                            {% endif %}
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <small class="text-muted">{{ lead.email }}</small>
+                                <span class="badge bg-light text-dark">{{ lead.source|title }}</span>
+                            </div>
+                            {% if lead.estimated_value %}
+                            <div class="text-primary fw-bold">${{ "%.2f"|format(lead.estimated_value) }}</div>
+                            {% endif %}
+                            <div class="d-flex gap-1 mt-2">
+                                <button class="btn btn-sm btn-outline-warning" 
+                                        onclick="moveLead({{ lead.id }}, 'qualified')">
+                                    <i class="bi bi-arrow-left"></i>
+                                </button>
+                                <a href="{{ url_for('sales.view_lead', lead_id=lead.id) }}" 
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <button class="btn btn-sm btn-outline-success" 
+                                        onclick="moveLead({{ lead.id }}, 'negotiation')">
+                                    <i class="bi bi-arrow-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Negotiation Column -->
+        <div class="col-lg-2 col-md-4">
+            <div class="pipeline-column">
+                <div class="column-header bg-secondary text-white">
+                    <h6 class="mb-0">Negotiation</h6>
+                    <span class="badge bg-light text-dark">{{ pipeline_data.negotiation|length }}</span>
+                </div>
+                <div class="column-content" id="negotiation-column">
+                    {% for lead in pipeline_data.negotiation %}
+                    <div class="lead-card" data-lead-id="{{ lead.id }}" draggable="true">
+                        <div class="card-body p-3">
+                            <h6 class="card-title mb-1">{{ lead.first_name }} {{ lead.last_name }}</h6>
+                            {% if lead.company_name %}
+                            <p class="text-muted small mb-2">{{ lead.company_name }}</p>
+                            {% endif %}
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <small class="text-muted">{{ lead.email }}</small>
+                                <span class="badge bg-light text-dark">{{ lead.source|title }}</span>
+                            </div>
+                            {% if lead.estimated_value %}
+                            <div class="text-primary fw-bold">${{ "%.2f"|format(lead.estimated_value) }}</div>
+                            {% endif %}
+                            <div class="d-flex gap-1 mt-2">
+                                <button class="btn btn-sm btn-outline-primary" 
+                                        onclick="moveLead({{ lead.id }}, 'proposal')">
+                                    <i class="bi bi-arrow-left"></i>
+                                </button>
+                                <a href="{{ url_for('sales.view_lead', lead_id=lead.id) }}" 
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <button class="btn btn-sm btn-outline-success" 
+                                        onclick="moveLead({{ lead.id }}, 'closed_won')">
+                                    <i class="bi bi-arrow-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Closed Won Column -->
+        <div class="col-lg-2 col-md-4">
+            <div class="pipeline-column">
+                <div class="column-header bg-success text-white">
+                    <h6 class="mb-0">Closed Won</h6>
+                    <span class="badge bg-light text-dark">{{ pipeline_data.closed_won|length }}</span>
+                </div>
+                <div class="column-content" id="closed-won-column">
+                    {% for lead in pipeline_data.closed_won %}
+                    <div class="lead-card" data-lead-id="{{ lead.id }}" draggable="true">
+                        <div class="card-body p-3">
+                            <h6 class="card-title mb-1">{{ lead.first_name }} {{ lead.last_name }}</h6>
+                            {% if lead.company_name %}
+                            <p class="text-muted small mb-2">{{ lead.company_name }}</p>
+                            {% endif %}
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <small class="text-muted">{{ lead.email }}</small>
+                                <span class="badge bg-light text-dark">{{ lead.source|title }}</span>
+                            </div>
+                            {% if lead.estimated_value %}
+                            <div class="text-success fw-bold">${{ "%.2f"|format(lead.estimated_value) }}</div>
+                            {% endif %}
+                            <div class="d-flex gap-1 mt-2">
+                                <button class="btn btn-sm btn-outline-secondary" 
+                                        onclick="moveLead({{ lead.id }}, 'negotiation')">
+                                    <i class="bi bi-arrow-left"></i>
+                                </button>
+                                <a href="{{ url_for('sales.view_lead', lead_id=lead.id) }}" 
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <button class="btn btn-sm btn-outline-success" 
+                                        onclick="convertToCustomer({{ lead.id }})">
+                                    <i class="bi bi-person-check"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.pipeline-column {
+    background: #f8f9fa;
+    border-radius: 8px;
+    min-height: 600px;
+}
+
+.column-header {
+    padding: 1rem;
+    border-radius: 8px 8px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.column-content {
+    padding: 1rem;
+    min-height: 500px;
+}
+
+.lead-card {
+    background: white;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    cursor: move;
+    transition: all 0.3s ease;
+}
+
+.lead-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.lead-card.dragging {
+    opacity: 0.5;
+    transform: rotate(5deg);
+}
+
+.column-content.drag-over {
+    background-color: rgba(102, 126, 234, 0.1);
+    border: 2px dashed #667eea;
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Drag and Drop functionality
+let draggedElement = null;
+
+document.addEventListener('DOMContentLoaded', function() {
+    initializeDragAndDrop();
+});
+
+function initializeDragAndDrop() {
+    const leadCards = document.querySelectorAll('.lead-card');
+    const columns = document.querySelectorAll('.column-content');
+
+    leadCards.forEach(card => {
+        card.addEventListener('dragstart', handleDragStart);
+        card.addEventListener('dragend', handleDragEnd);
+    });
+
+    columns.forEach(column => {
+        column.addEventListener('dragover', handleDragOver);
+        column.addEventListener('drop', handleDrop);
+        column.addEventListener('dragenter', handleDragEnter);
+        column.addEventListener('dragleave', handleDragLeave);
+    });
+}
+
+function handleDragStart(e) {
+    draggedElement = e.target;
+    e.target.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/html', e.target.outerHTML);
+}
+
+function handleDragEnd(e) {
+    e.target.classList.remove('dragging');
+}
+
+function handleDragOver(e) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+}
+
+function handleDragEnter(e) {
+    e.preventDefault();
+    e.target.closest('.column-content').classList.add('drag-over');
+}
+
+function handleDragLeave(e) {
+    e.target.closest('.column-content').classList.remove('drag-over');
+}
+
+function handleDrop(e) {
+    e.preventDefault();
+    const column = e.target.closest('.column-content');
+    column.classList.remove('drag-over');
+    
+    if (draggedElement && column) {
+        const newStatus = getStatusFromColumn(column);
+        const leadId = draggedElement.dataset.leadId;
+        
+        // Move the card visually
+        column.appendChild(draggedElement);
+        
+        // Update the status via API
+        moveLead(leadId, newStatus);
+    }
+}
+
+function getStatusFromColumn(column) {
+    const columnId = column.id;
+    if (columnId === 'prospect-column') return 'prospect';
+    if (columnId === 'contacted-column') return 'contacted';
+    if (columnId === 'qualified-column') return 'qualified';
+    if (columnId === 'proposal-column') return 'proposal';
+    if (columnId === 'negotiation-column') return 'negotiation';
+    if (columnId === 'closed-won-column') return 'closed_won';
+    return 'prospect';
+}
+
+// Move lead to different status
+function moveLead(leadId, newStatus) {
+    fetch(`/sales/leads/${leadId}/status`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+        },
+        body: `status=${newStatus}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Show success message
+            showNotification('Lead status updated successfully!', 'success');
+            // Refresh the pipeline after a short delay
+            setTimeout(() => {
+                refreshPipeline();
+            }, 1000);
+        } else {
+            showNotification('Failed to update lead status', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('Error updating lead status', 'error');
+    });
+}
+
+// Convert lead to customer
+function convertToCustomer(leadId) {
+    if (confirm('Are you sure you want to convert this lead to a customer?')) {
+        // Redirect to conversion page or show modal
+        window.location.href = `/sales/leads/${leadId}/convert`;
+    }
+}
+
+// Refresh pipeline
+function refreshPipeline() {
+    window.location.reload();
+}
+
+// Show notification
+function showNotification(message, type) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type === 'error' ? 'danger' : type} alert-dismissible fade show`;
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.querySelector('.container-fluid').insertBefore(alertDiv, document.querySelector('.row'));
+    
+    // Auto-remove after 3 seconds
+    setTimeout(() => {
+        alertDiv.remove();
+    }, 3000);
+}
+</script>
+{% endblock %}
