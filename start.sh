@@ -9,4 +9,4 @@ export PORT=${PORT:-5000}
 echo "🚀 Starting SaaS ERP application on port $PORT"
 
 # Start the application with gunicorn
-exec gunicorn --bind 0.0.0.0:$PORT app:app
+exec gunicorn --bind 0.0.0.0:$PORT wsgi:app

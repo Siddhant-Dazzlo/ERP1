@@ -13,6 +13,7 @@ This guide will help you deploy your SaaS ERP application to Railway.
    - `railway.json`
    - `Procfile`
    - `nixpacks.toml`
+   - `wsgi.py` (WSGI entry point for production)
    - `gunicorn.conf.py` (Gunicorn configuration)
    - `start.sh` (Startup script)
    - `requirements-railway.txt` (Railway-optimized requirements)
@@ -105,28 +106,34 @@ RATELIMIT_STORAGE_URL=redis://username:password@host:port
    - Check build logs for specific package version errors
    - Update `nixpacks.toml` to use the correct requirements file
 
-2. **Port Binding Errors**:
+2. **App Import Errors**:
+   - Error: `Failed to find attribute 'app' in 'app'`
+   - Solution: Use `wsgi.py` as the WSGI entry point
+   - Ensure `wsgi.py` is in your repository
+   - Check that Procfile uses `gunicorn --config gunicorn.conf.py wsgi:app`
+
+3. **Port Binding Errors**:
    - Error: `'$PORT' is not a valid port number`
    - Solution: The `gunicorn.conf.py` file handles PORT environment variable properly
    - Ensure `gunicorn.conf.py` is in your repository
-   - Check that Procfile uses `gunicorn --config gunicorn.conf.py app:app`
+   - Check that Procfile uses `gunicorn --config gunicorn.conf.py wsgi:app`
 
-3. **Build Fails - General**:
+4. **Build Fails - General**:
    - Check the build logs in Railway dashboard
    - Ensure all required files are present
    - Verify Python version compatibility
 
-4. **Database Connection Error**: 
+5. **Database Connection Error**: 
    - Verify DATABASE_URL is correct
    - Check if PostgreSQL service is running
    - Ensure database credentials are properly set
 
-5. **Redis Connection Error**: 
+6. **Redis Connection Error**: 
    - Verify REDIS_URL is correct
    - Check if Redis service is running
    - Redis is optional but recommended for caching
 
-6. **Application Crashes**: 
+7. **Application Crashes**: 
    - Check the deployment logs
    - Verify all environment variables are set
    - Check if the application starts locally
