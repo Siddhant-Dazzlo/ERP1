@@ -1,2 +1,2 @@
-web: gunicorn --bind 0.0.0.0:$PORT app:app
+web: gunicorn --config gunicorn.conf.py app:app
 worker: celery -A celery_app worker --loglevel=info
