@@ -64,7 +64,11 @@ def create_app(config_name='development'):
     def before_request():
         from flask import request, g
         host = request.host
-        if '.' in host:
+        
+        # Skip tenant detection for local development
+        if host in ['localhost', '127.0.0.1'] or ':' in host:
+            g.tenant = None
+        elif '.' in host:
             subdomain = host.split('.')[0]
             if subdomain not in ['www', 'api', 'admin']:
                 g.tenant = subdomain

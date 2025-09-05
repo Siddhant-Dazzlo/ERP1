@@ -38,7 +38,8 @@ def login():
                 return redirect(url_for('auth.login'))
             
             # Check if user belongs to current tenant (only for multi-tenant deployments)
-            if g.tenant and user.company.subdomain != g.tenant:
+            # Skip tenant validation in development mode or when no tenant is detected
+            if g.tenant and g.tenant not in ['localhost', '127.0.0.1'] and user.company.subdomain != g.tenant:
                 flash('Access denied. You do not have access to this company.', 'error')
                 return redirect(url_for('auth.login'))
             
